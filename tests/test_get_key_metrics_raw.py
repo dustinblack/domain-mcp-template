@@ -11,7 +11,7 @@ import pytest
 from src.server.app import DomainMCPServer
 
 # Ensure Boot-Time plugin is registered via import side-effect
-importlib.import_module("src.domain.plugins.boot_time")
+importlib.import_module("src.domain.examples.horreum_boot_time")
 
 
 @pytest.mark.asyncio

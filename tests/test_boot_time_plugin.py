@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-import src.domain.plugins.boot_time  # noqa: F401 - ensure plugin registration
+import src.domain.examples.horreum_boot_time  # noqa: F401 - ensure plugin registration
 from src.domain.plugins import get as get_plugin
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "boot-time"

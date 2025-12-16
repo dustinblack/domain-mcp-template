@@ -1376,6 +1376,6 @@ class BootTimePlugin:
 
 
 # Import register here to avoid circular imports
-from . import register  # noqa: E402
+from ..plugins import register  # noqa: E402
 
 register(BootTimePlugin())

@@ -1,4 +1,17 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203, W503
-exclude = .git,__pycache__,venv,.venv,build,dist,schemas,docs
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    *.egg-info,
+    .mypy_cache,
+    .pytest_cache
+# Template/scaffold files with instructional content
+per-file-ignores =
+    src/domain/plugins/plugin_scaffold.py:E501,F401,F841
+    tests/test_template_plugin.py:E501,F401,F841

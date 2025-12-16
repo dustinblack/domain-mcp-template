@@ -125,9 +125,9 @@ def normalize_get_key_metrics_params(raw: Dict[str, Any]) -> Dict[str, Any]:
 
     # Map OS aliases to canonical identifiers
     os_alias_map = {
-    "rhel": "rhel",
-    "autosd": "autosd",
-    # "rhivos": "rhel",  # Example: Domain specific alias mapping
+        "rhel": "rhel",
+        "autosd": "autosd",
+        # "rhivos": "rhel",  # Example: Domain specific alias mapping
     }
 
     # Handle explicit os_id parameter

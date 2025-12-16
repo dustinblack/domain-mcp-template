@@ -28,35 +28,15 @@ async def test_source_describe_static_fields() -> None:
     assert resp.source_type.value == "elasticsearch"
 
 
-class _MockClient:
-    """Tiny mock of httpx.AsyncClient returning a fixed JSON payload."""
+class _MockMCPClient:
+    """Mock MCP client for testing Elasticsearch adapter."""
 
     def __init__(self, response_json: Dict[str, Any]) -> None:
         self._json = response_json
 
-    async def post(self, _path: str, json: Dict[str, Any]) -> "_MockResponse":
-        """Return a mocked response regardless of path/body."""
-        return _MockResponse(self._json)
-
-    async def aclose(self) -> None:
-        """No-op async close for API parity with httpx.AsyncClient."""
-        return None
-
-
-class _MockResponse:
-    """Minimal response object exposing raise_for_status/json methods."""
-
-    def __init__(self, payload: Dict[str, Any]) -> None:
-        self._payload = payload
-        self.status_code = 200
-
-    def raise_for_status(self) -> None:  # no-op
-        """Simulate successful HTTP status."""
-        return None
-
-    def json(self) -> Dict[str, Any]:
-        """Return the preconfigured JSON payload."""
-        return self._payload
+    async def call_tool(self, name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Return mocked tool responses."""
+        return self._json
 
 
 @pytest.mark.asyncio
@@ -64,50 +44,49 @@ async def test_tests_list_parsing_with_mock() -> None:
     """Validate tests.list response parsing with a mocked client."""
     adapter = ElasticsearchAdapter("npx -y @modelcontextprotocol/server-elasticsearch")
     # Inject mock client via public testing hook
-    adapter.inject_http_client_for_testing(
-        _MockClient(
+    adapter.inject_client_for_testing(
+        _MockMCPClient(
             {
-                "tests": [
-                    {"test_id": "logs-app-*", "name": "Application Logs", "description": "App log indices", "tags": []}
-                ],
-                "pagination": {"has_more": False},
+                "indices": ["logs-app-*", "logs-system-*"],
             }
         )
     )
     resp = await adapter.tests_list(TestsListRequest.model_validate({"page_size": 1}))
     assert len(resp.tests) == 1
     assert resp.tests[0].test_id == "logs-app-*"
-    assert resp.pagination.has_more is False
+    assert resp.pagination.has_more is True
 
 
 @pytest.mark.asyncio
 async def test_datasets_search_parsing_with_mock() -> None:
     """Validate datasets.search parsing with a mocked client."""
     adapter = ElasticsearchAdapter("npx -y @modelcontextprotocol/server-elasticsearch")
-    adapter.inject_http_client_for_testing(
-        _MockClient(
+    adapter.inject_client_for_testing(
+        _MockMCPClient(
             {
-                "datasets": [
-                    {
-                        "dataset_id": "doc-123",
-                        "test_id": "logs-app-*",
-                        "content_type": "application/json",
-                        "data": {
-                            "@timestamp": "2024-12-15T10:30:00Z",
-                            "level": "INFO",
-                            "service": "payment-api",
-                            "message": "Request processed"
+                "hits": {
+                    "hits": [
+                        {
+                            "_id": "doc-123",
+                            "_index": "logs-app-prod",
+                            "_source": {
+                                "@timestamp": "2024-12-15T10:30:00Z",
+                                "level": "INFO",
+                                "service": "payment-api",
+                                "message": "Request processed",
+                            },
                         }
-                    }
-                ],
-                "pagination": {"has_more": False},
+                    ],
+                    "total": {"value": 1},
+                }
             }
         )
     )
     resp = await adapter.datasets_search(
-        DatasetsSearchRequest.model_validate({"page_size": 1})
+        DatasetsSearchRequest.model_validate(
+            {"test_id": "logs-app-prod", "page_size": 10}
+        )
     )
     assert len(resp.datasets) == 1
-    assert resp.datasets[0].dataset_id == "doc-123"
+    assert "logs-app-prod::doc-123" in resp.datasets[0].dataset_id
     assert resp.pagination.has_more is False
-

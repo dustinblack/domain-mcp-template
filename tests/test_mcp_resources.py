@@ -100,7 +100,8 @@ def test_read_platform_identifiers_glossary():
     assert "qemu" in content["platforms"]
     assert "intel-nuc" in content["platforms"]
     assert "raspberry-pi" in content["platforms"]
-    assert "orin" in content["platforms"]
+    # Verify platform details
+    assert content["platforms"]["qemu"]["type"] == "virtualized"
 
 
 def test_read_metadata_fields_glossary():
@@ -114,11 +115,11 @@ def test_read_metadata_fields_glossary():
     assert "report_metadata" in content
     assert "three_d_matrix" in content
 
-    # Check that all 9 metadata fields are present
+    # Check that metadata fields are present
     metadata_names = [field["name"] for field in content["report_metadata"]]
-    assert "RHIVOS Release" in metadata_names
-    assert "RHIVOS OS ID" in metadata_names
-    assert "RHIVOS Target" in metadata_names
+    assert "Release" in metadata_names
+    assert "Image Name" in metadata_names
+    assert "Mode" in metadata_names
 
 
 def test_read_boot_time_basic_example():

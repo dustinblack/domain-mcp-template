@@ -30,6 +30,8 @@ class ElasticsearchLogsPlugin:
     """Extracts metrics from Elasticsearch log documents."""
 
     id = "elasticsearch-logs"
+    glossary: Dict[str, Dict[str, str]] = {}
+    kpis: List[str] = []
 
     async def extract(
         self,
@@ -47,22 +49,24 @@ class ElasticsearchLogsPlugin:
             return points
 
         # Get timestamp
-        ts = _parse_timestamp(str(json_body.get("@timestamp"))) or datetime.now(timezone.utc)
+        ts = _parse_timestamp(str(json_body.get("@timestamp"))) or datetime.now(
+            timezone.utc
+        )
 
         # Build dimensions
         dims: Dict[str, str] = {}
-        
+
         # Common log fields
         if "level" in json_body:
             dims["level"] = str(json_body["level"]).upper()
         elif "log.level" in json_body:
             dims["level"] = str(json_body["log.level"]).upper()
-            
+
         if "service" in json_body:
             dims["service"] = str(json_body["service"])
         elif "service.name" in json_body:
             dims["service"] = str(json_body["service.name"])
-            
+
         if "host" in json_body:
             dims["host"] = str(json_body["host"])
         elif "host.name" in json_body:
@@ -76,7 +80,7 @@ class ElasticsearchLogsPlugin:
                 value=1.0,
                 unit="count",
                 dimensions=dims or None,
-                source=self.id
+                source=self.id,
             )
         )
 
@@ -88,21 +92,23 @@ class ElasticsearchLogsPlugin:
             if isinstance(val, (int, float)):
                 duration = float(val)
                 break
-        
+
         if duration is not None and _is_valid_float(duration):
-             points.append(
+            points.append(
                 MetricPoint(
                     metric_id="log.duration_ms",
                     timestamp=ts,
                     value=duration,
                     unit="ms",
                     dimensions=dims or None,
-                    source=self.id
+                    source=self.id,
                 )
             )
 
         return points
 
+
 # Import register here
-from . import register # noqa: E402
+from ..plugins import register  # noqa: E402
+
 register(ElasticsearchLogsPlugin())

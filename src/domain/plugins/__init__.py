@@ -240,22 +240,35 @@ def apply_enabled_plugins(enabled: Dict[str, bool]) -> Dict[str, List[str]]:
 
 
 def reset_plugins() -> None:
-    """Reset plugin registry to default built-in set.
+    """Reset plugin registry to default example plugins.
 
-    This clears the in-memory registry and registers built-in plugins explicitly
+    This clears the in-memory registry and registers example plugins explicitly
     without relying on import-time side effects. Useful for tests and for
     HTTP app startup/shutdown to avoid cross-test contamination.
     """
     _registry.clear()
     try:
-        from .boot_time import BootTimePlugin  # noqa: WPS433 (local import)
+        from ..examples.elasticsearch_logs import (  # noqa: WPS433
+            ElasticsearchLogsPlugin,
+        )
+        from ..examples.horreum_boot_time import (  # noqa: WPS433 (local import)
+            BootTimePlugin,
+        )
 
         register(BootTimePlugin())
+        register(ElasticsearchLogsPlugin())
     except Exception:  # pragma: no cover - defensive
-        logger.warning("Failed to reset default plugins; registry is empty")
+        logger.warning("Failed to reset example plugins; registry is empty")
 
 
-# Import built-in plugins to trigger registration (after register is defined).
+# Import example plugins to trigger registration (after register is defined).
 # Keep import simple and explicit so tests and runtime consistently register
 # the default plugins without side effects elsewhere.
-from . import boot_time as _boot_time  # noqa: F401, E402
+# NOTE: These are example plugins provided with the template. Remove or replace
+# with your own domain plugins as needed.
+try:
+    from ..examples import elasticsearch_logs  # noqa: F401, E402
+    from ..examples import horreum_boot_time as boot_time  # noqa: F401, E402
+except ImportError:
+    # Allow template to work even if examples are removed
+    pass

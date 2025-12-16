@@ -10,7 +10,7 @@ from src.server.app import DomainMCPServer
 from src.server.models import GetKeyMetricsRequest
 
 # Ensure plugin registry is populated
-importlib.import_module("src.domain.plugins.boot_time")
+importlib.import_module("src.domain.examples.horreum_boot_time")
 
 
 @pytest.mark.asyncio

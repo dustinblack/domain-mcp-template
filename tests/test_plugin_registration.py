@@ -34,7 +34,7 @@ def test_log_plugin_status_output(caplog):
 def test_plugin_import_no_circular_dependency():
     """Ensure plugin imports don't cause circular dependency errors."""
     # This test passes if the import succeeds without ImportError
-    from src.domain.plugins import boot_time  # noqa: F401, E402
+    from src.domain.examples import horreum_boot_time  # noqa: F401, E402
 
     # Should be able to access the plugin after import
     plugin = get("boot-time-verbose")

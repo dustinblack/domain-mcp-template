@@ -7,7 +7,7 @@ and values (statistic_type, os_id, mode).
 
 import pytest
 
-from src.domain.plugins.boot_time import BootTimePlugin
+from src.domain.examples.horreum_boot_time import BootTimePlugin
 
 
 @pytest.mark.asyncio
