@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "3D Matrix Result Organization",
+  "category": "presentation",
+  "description": "How to organize and present boot time results using the 3D matrix structure",
+  "purpose": "Teach AI clients to group metric_points by target × mode × os_id dimensions for team-standard report format",
+  "query_examples": [
+    "Show me boot time results for the past week",
+    "Analyze nightly boot performance",
+    "Create a boot time report",
+    "Compare boot time across platforms"
+  ],
+  "critical_principle": "ALWAYS organize boot time results by the 3D matrix (target × mode × os_id) unless user explicitly requests different grouping",
+  "grouping_algorithm": {
+    "step_1": {
+      "action": "Call get_key_metrics tool",
+      "receives": "Array of metric_points with dimensions fields"
+    },
+    "step_2": {
+      "action": "Extract dimensions from each metric_point",
+      "fields": ["dimensions.target", "dimensions.mode", "dimensions.os_id"]
+    },
+    "step_3": {
+      "action": "Group metric_points by unique (target, mode, os_id) combinations",
+      "method": "Create nested structure or tables organized by these three dimensions"
+    },
+    "step_4": {
+      "action": "Present results showing comparisons across dimensions",
+      "enables": ["Platform comparison", "Mode comparison", "OS comparison"]
+    }
+  },
+  "example_input": {
+    "description": "Sample metric_points returned from get_key_metrics",
+    "metric_points": [
+      {
+        "metric_id": "boot.time.total.mean",
+        "timestamp": "2025-10-15T10:00:00Z",
+        "value": 7050.5,
+        "unit": "milliseconds",
+        "dimensions": {
+          "target": "qemu",
+          "mode": "package",
+          "os_id": "rhel",
+          "statistic_type": "mean"
+        }
+      },
+      {
+        "metric_id": "boot.time.total.mean",
+        "timestamp": "2025-10-15T10:05:00Z",
+        "value": 8200.3,
+        "unit": "milliseconds",
+        "dimensions": {
+          "target": "raspberry-pi",
+          "mode": "package",
+          "os_id": "rhel",
+          "statistic_type": "mean"
+        }
+      },
+      {
+        "metric_id": "boot.time.total.mean",
+        "timestamp": "2025-10-15T10:10:00Z",
+        "value": 7150.2,
+        "unit": "milliseconds",
+        "dimensions": {
+          "target": "qemu",
+          "mode": "container",
+          "os_id": "rhel",
+          "statistic_type": "mean"
+        }
+      },
+      {
+        "metric_id": "boot.time.total.mean",
+        "timestamp": "2025-10-15T10:15:00Z",
+        "value": 6900.8,
+        "unit": "milliseconds",
+        "dimensions": {
+          "target": "qemu",
+          "mode": "package",
+          "os_id": "autosd",
+          "statistic_type": "mean"
+        }
+      }
+    ]
+  },
+  "example_presentation": {
+    "format": "3D Matrix Table",
+    "description": "Organize by target (rows) × mode (columns) × os_id (table separation)",
+    "table_1": {
+      "title": "RHEL Boot Time (ms)",
+      "headers": ["Target", "Package", "Container", "OSTree"],
+      "rows": [
+        ["qemu", "7050.5", "7150.2", "N/A"],
+        ["raspberry-pi", "8200.3", "N/A", "N/A"],
+        ["orin", "N/A", "N/A", "N/A"]
+      ]
+    },
+    "table_2": {
+      "title": "AutoSD Boot Time (ms)",
+      "headers": ["Target", "Package", "Container", "OSTree"],
+      "rows": [
+        ["qemu", "6900.8", "N/A", "N/A"],
+        ["raspberry-pi", "N/A", "N/A", "N/A"],
+        ["orin", "N/A", "N/A", "N/A"]
+      ]
+    }
+  },
+  "alternative_presentation": {
+    "format": "Grouped Lists",
+    "description": "When tables are impractical, use hierarchical grouping",
+    "example": {
+      "RHEL": {
+        "qemu": {
+          "package": "7050.5ms",
+          "container": "7150.2ms"
+        },
+        "raspberry-pi": {
+          "package": "8200.3ms"
+        }
+      },
+      "AutoSD": {
+        "qemu": {
+          "package": "6900.8ms"
+        }
+      }
+    }
+  },
+  "key_insights_enabled": {
+    "platform_comparison": "Which hardware platform has fastest boot? (qemu: 7050ms vs raspberry-pi: 8200ms)",
+    "mode_comparison": "Which image type boots faster? (package: 7050ms vs container: 7150ms)",
+    "os_comparison": "Which OS variant boots faster? (autosd: 6900ms vs rhel: 7050ms)"
+  },
+  "handling_missing_data": {
+    "undefined_dimensions": {
+      "description": "Some metric_points may have 'undefined' for target, mode, or os_id",
+      "reason": "Data source (Horreum) had missing or null label values",
+      "presentation": "Group 'undefined' separately or note as 'Unknown' in reports"
+    },
+    "sparse_matrix": {
+      "description": "Not all combinations of (target × mode × os_id) will have data",
+      "presentation": "Use 'N/A' or blank cells for missing combinations in tables"
+    }
+  },
+  "critical_rules": [
+    "ALWAYS group results by target × mode × os_id when presenting boot time data",
+    "DO NOT present flat lists of numbers without dimension grouping",
+    "DO include comparison insights (fastest platform, mode, OS)",
+    "DO handle 'undefined' dimensions gracefully (note as missing data)",
+    "DO show trends over time within each (target, mode, os_id) group"
+  ],
+  "see_also": [
+    "domain://glossary/metadata-fields - Complete metadata field reference",
+    "domain://glossary/platform-identifiers - Platform types and details",
+    "domain://examples/statistical-analysis - Add statistics to matrix presentation"
+  ]
+}
+

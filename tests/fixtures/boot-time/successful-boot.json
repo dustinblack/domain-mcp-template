@@ -1,0 +1,38 @@
+{
+  "boot_metrics": {
+    "total_boot_time_ms": 12500,
+    "phases": {
+      "firmware": 2000,
+      "bootloader": 500,
+      "kernel": 3000,
+      "initrd": 1500,
+      "userspace": 5500
+    },
+    "services": {
+      "systemd_init_ms": 2500,
+      "network_init_ms": 1000
+    },
+    "status": {
+      "success": true,
+      "failure_reason": null,
+      "retry_count": 0
+    }
+  },
+  "system_info": {
+    "os_id": "rhel-9.2",
+    "mode": "standard",
+    "hardware": "x86_64",
+    "cpu_cores": 8,
+    "memory_gb": 16
+  },
+  "test_config": {
+    "test_variant": "standard-boot",
+    "environment": "physical"
+  },
+  "metadata": {
+    "collection_timestamp": "2025-09-22T10:30:00Z",
+    "collector_version": "1.2.3",
+    "schema_version": "1.0.0"
+  },
+  "timestamp": "2025-09-22T10:30:00Z"
+}

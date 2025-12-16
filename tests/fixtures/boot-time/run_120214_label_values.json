@@ -1,0 +1,310 @@
+{
+  "items": [
+    {
+      "values": [
+        {
+          "id": null,
+          "name": "BOOT1 - Kernel Pre-Timer Duration Confidence",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Duration Average ms",
+          "schema_uri": null,
+          "value": 3.343
+        },
+        {
+          "id": null,
+          "name": "BOOT3 - Initrd Duration Confidence",
+          "schema_uri": null,
+          "value": 7.555
+        },
+        {
+          "id": null,
+          "name": "BOOT0 - SystemInit Duration Confidence ",
+          "schema_uri": null,
+          "value": 1.948
+        },
+        {
+          "id": null,
+          "name": "IP Address",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "OS Release",
+          "schema_uri": null,
+          "value": "Automotive Stream Distribution 9"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Timestamp Average ms - kernel pre-timer inclusive",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "Run source",
+          "schema_uri": null,
+          "value": "gitlab_schedule"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Userpace Timestamp Average ms",
+          "schema_uri": null,
+          "value": 2392.181
+        },
+        {
+          "id": null,
+          "name": "BOOT2 - Kernel Post-Timer Duration Confidence",
+          "schema_uri": null,
+          "value": 2.853
+        },
+        {
+          "id": null,
+          "name": "BOOT0 - Kernel Pre-Timer Start Timestamp Average ms",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "RHIVOS OS ID",
+          "schema_uri": null,
+          "value": "autosd"
+        },
+        {
+          "id": null,
+          "name": "RHIVOS Mode",
+          "schema_uri": null,
+          "value": "package"
+        },
+        {
+          "id": null,
+          "name": "UUID",
+          "schema_uri": null,
+          "value": "4f19d6bf-63eb-4c81-81b2-7fe7511fc425"
+        },
+        {
+          "id": null,
+          "name": "KPI - Early Service Timestamp Average ms - kernel pre-timer inclusive",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "Hostname",
+          "schema_uri": null,
+          "value": "localhost"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Duration Confidence",
+          "schema_uri": null,
+          "value": 42.108
+        },
+        {
+          "id": null,
+          "name": "BOOT0 - Kernel Pre-Timer Start Timestamp Confidence",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "BOOT2 - Kernel Post-Timer Duration Average ms",
+          "schema_uri": null,
+          "value": 199.962
+        },
+        {
+          "id": null,
+          "name": "Test Description",
+          "schema_uri": null,
+          "value": "autosd-nightly: https://gitlab.com/redhat/edge/tests/perfscale/boot-time-analysis-scripts/-/pipelines/2086699810"
+        },
+        {
+          "id": null,
+          "name": "KPI - Early Service Timestamp Confidence",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Timestamp Average ms",
+          "schema_uri": null,
+          "value": 1751.941
+        },
+        {
+          "id": null,
+          "name": "SUT",
+          "schema_uri": null,
+          "value": "ridesx4 autosd package 2084510542.43d7026a 2025-10-08 01:20:26"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Userspace Timestamp Confidence",
+          "schema_uri": null,
+          "value": 21.849
+        },
+        {
+          "id": null,
+          "name": "BOOT4 - Switchroot Duration Confidence",
+          "schema_uri": null,
+          "value": 6.847
+        },
+        {
+          "id": null,
+          "name": "Kernel Version",
+          "schema_uri": null,
+          "value": "5.14.0-617.566.el9iv.aarch64"
+        },
+        {
+          "id": null,
+          "name": "User",
+          "schema_uri": null,
+          "value": "gitlab-runner"
+        },
+        {
+          "id": null,
+          "name": "RHIVOS Config",
+          "schema_uri": null,
+          "value": "Need to collect rhivos_config.uuid"
+        },
+        {
+          "id": null,
+          "name": "Run type",
+          "schema_uri": null,
+          "value": "nightly"
+        },
+        {
+          "id": null,
+          "name": "RHIVOS Build",
+          "schema_uri": null,
+          "value": "2084510542.43d7026a"
+        },
+        {
+          "id": null,
+          "name": "BOOT4 - Switchroot Duration Average ms",
+          "schema_uri": null,
+          "value": 4975.851
+        },
+        {
+          "id": null,
+          "name": "KPI - QM partition start Timestamp Average ms",
+          "schema_uri": null,
+          "value": 5273.684
+        },
+        {
+          "id": null,
+          "name": "Hardware Firmware Version",
+          "schema_uri": null,
+          "value": "SA8775P.HGY.4.1.6.0-00021-STD.PROD-1"
+        },
+        {
+          "id": null,
+          "name": "RHIVOS image name",
+          "schema_uri": null,
+          "value": "qa"
+        },
+        {
+          "id": null,
+          "name": "KPI - First Link is Up Timestamp Confidence %",
+          "schema_uri": null,
+          "value": 0
+        },
+        {
+          "id": null,
+          "name": "KPI - First Link is Up Timestamp Average ms",
+          "schema_uri": null,
+          "value": 9288.087
+        },
+        {
+          "id": null,
+          "name": "RHIVOS Release",
+          "schema_uri": null,
+          "value": "autosd9-202510070002"
+        },
+        {
+          "id": null,
+          "name": "KPI - Early Service Duration Average ms",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "Image Build Timestamp",
+          "schema_uri": null,
+          "value": "2025-10-07 01:52:34.055560"
+        },
+        {
+          "id": null,
+          "name": "BOOT0 - SystemInit Duration Average ms",
+          "schema_uri": null,
+          "value": 1530.286
+        },
+        {
+          "id": null,
+          "name": "Run ID",
+          "schema_uri": null,
+          "value": "redhat/edge/tests/perfscale/boot-time-analysis-scripts:11639018676"
+        },
+        {
+          "id": null,
+          "name": "KPI - Start Kmod Load Timestamp Confidence",
+          "schema_uri": null,
+          "value": 21.849
+        },
+        {
+          "id": null,
+          "name": "KPI - Early Service Timestamp Average ms",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "OS Name",
+          "schema_uri": null,
+          "value": "Automotive Stream Distribution"
+        },
+        {
+          "id": null,
+          "name": "BOOT1 - Kernel Pre-Timer Duration Average ms",
+          "schema_uri": null,
+          "value": "Need to collect"
+        },
+        {
+          "id": null,
+          "name": "Number of Samples",
+          "schema_uri": null,
+          "value": 50
+        },
+        {
+          "id": null,
+          "name": "RHIVOS Target",
+          "schema_uri": null,
+          "value": "ridesx4"
+        },
+        {
+          "id": null,
+          "name": "BOOT3 - Initrd Duration Average ms",
+          "schema_uri": null,
+          "value": 375.621
+        },
+        {
+          "id": null,
+          "name": "Start time",
+          "schema_uri": null,
+          "value": "2025-10-07T21:20:26.747321-04:00"
+        }
+      ],
+      "run_id": "120214",
+      "dataset_id": "327697",
+      "start": "2025-10-08T01:20:26.747000Z",
+      "stop": "2025-10-08T01:41:47.248000Z"
+    }
+  ],
+  "pagination": {
+    "has_more": false,
+    "total_count": 1
+  }
+}

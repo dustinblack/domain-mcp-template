@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Filter Boot Time by OS",
+  "category": "queries",
+  "description": "Get boot time results for specific operating system",
+  "query_examples": [
+    "Show me RHEL boot performance",
+    "Get boot time for autosd"
+  ],
+  "tool_call": {
+    "tool": "get_key_metrics",
+    "params": {
+      "os_id": "rhel"
+    },
+    "aliases": {
+      "RHEL": "rhel (case-insensitive)"
+    }
+  },
+  "filtering_modes": {
+    "server_side": {
+      "method": "Horreum multiFilter on 'OS ID' label",
+      "benefits": [
+        "Reduces data transfer",
+        "Faster query execution",
+        "Lower memory usage"
+      ],
+      "applied_for": "Label values queries"
+    },
+    "client_side": {
+      "method": "Plugin filters dimensions.os_id",
+      "benefits": [
+        "Works when label unavailable",
+        "Consistent behavior across data sources"
+      ],
+      "applied_for": "Dataset queries (fallback)"
+    }
+  },
+  "returns": {
+    "same_as": "domain://examples/boot-time-basic",
+    "filtered_to": "Only results matching specified os_id",
+    "dimensions": {
+      "os_id": "Always matches filter value (e.g., 'rhel')"
+    }
+  },
+  "critical_constraints": {
+    "correct_parameter": "os_id (not test_id)",
+    "examples": {
+      "correct": [
+        "os_id='rhel'",
+        "os_id='autosd'"
+      ],
+      "wrong": [
+        "test_id='rhel' (causes query failure)",
+        "test_id='autosd' (causes query failure)",
+        "dataset_types=['rhel'] (wrong parameter type)"
+      ]
+    }
+  },
+  "common_mistakes": [
+    {
+      "mistake": "Using test_id instead of os_id",
+      "consequence": "Query returns no results or fails",
+      "fix": "Always use os_id='rhel' not test_id='rhel'"
+    },
+    {
+      "mistake": "Filtering by multiple OS separately",
+      "consequence": "Inefficient, multiple queries needed",
+      "fix": "Query all, filter client-side, or use multiple os_id calls"
+    }
+  ],
+  "see_also": [
+    "domain://glossary/os-identifiers - Complete OS reference",
+    "domain://examples/boot-time-basic - Basic query pattern",
+    "domain://examples/statistical-analysis - Add statistics"
+  ]
+}

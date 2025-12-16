@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install linting dependencies
+        run: |
+          pip install --upgrade pip
+          pip install black isort flake8
+      
+      - name: Check code formatting with black
+        run: black --check src/ tests/
+      
+      - name: Check import sorting with isort
+        run: isort --check-only src/ tests/
+      
+      - name: Lint with flake8
+        run: flake8 src/ tests/
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run tests with pytest
+        run: pytest -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mypy
+          pip install -r requirements.txt
+      
+      - name: Run type checking with mypy
+        run: mypy --ignore-missing-imports src/
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install security scanning tools
+        run: |
+          pip install --upgrade pip
+          pip install bandit pip-audit
+      
+      - name: Run Bandit security scan
+        run: bandit -q -r src/
+      
+      - name: Run pip-audit for dependency vulnerabilities
+        run: pip-audit -r requirements.txt || true
+        continue-on-error: true
+

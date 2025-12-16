@@ -1,0 +1,38 @@
+{
+  "_comment": "TEMPLATE: Domain-specific glossary for your KPIs",
+  "_instructions": "Define your Key Performance Indicators here",
+  "_instructions_2": "This helps AI clients understand natural language queries",
+  "_instructions_3": "Replace TODO placeholders with your actual domain terms",
+  
+  "kpis": [
+    {
+      "term": "TODO_kpi_name",
+      "definition": "TODO: Human-readable description of what this KPI measures",
+      "unit": "TODO: Unit of measurement (e.g., seconds, milliseconds, count, bytes, percentage)",
+      "aggregations": [
+        "mean",
+        "p95",
+        "p99"
+      ],
+      "example_queries": [
+        "TODO: Show me [KPI] for [dimension] over the last week",
+        "TODO: What is the [aggregation] [KPI] for [filter]?"
+      ],
+      "related_dimensions": [
+        "TODO_dimension_1",
+        "TODO_dimension_2"
+      ]
+    },
+    {
+      "term": "TODO_another_kpi",
+      "definition": "TODO: Description",
+      "unit": "TODO_unit",
+      "aggregations": ["mean", "sum"],
+      "example_queries": [
+        "TODO: Example query"
+      ],
+      "related_dimensions": []
+    }
+  ]
+}
+

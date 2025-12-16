@@ -1,0 +1,22 @@
+# Default owners for everything in the repo
+# These owners will be requested for review when someone opens a pull request.
+* @OWNER_USERNAME
+
+# Documentation
+/docs/ @OWNER_USERNAME
+/README.md @OWNER_USERNAME
+/IMPLEMENTATION_PLAN.md @OWNER_USERNAME
+/CONTRIBUTING.md @OWNER_USERNAME
+
+# Core domain logic
+/src/domain/ @OWNER_USERNAME
+/src/adapters/ @OWNER_USERNAME
+
+# CI/CD configuration
+/.github/ @OWNER_USERNAME
+/.gitlab-ci.yml @OWNER_USERNAME
+
+# Security and dependencies
+/requirements.txt @OWNER_USERNAME
+/pyproject.toml @OWNER_USERNAME
+

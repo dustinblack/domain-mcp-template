@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "domain": "metadata-fields",
+  "description": "Required metadata fields for performance reports",
+  "report_metadata": [
+    {
+      "name": "Release",
+      "source": "Horreum label",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "example": "9.5",
+      "description": "Software version/release identifier",
+      "importance": "critical"
+    },
+    {
+      "name": "Image Name",
+      "source": "Horreum label",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "example": "rhel-9.5-container-minimal",
+      "description": "Specific image tested",
+      "importance": "critical"
+    },
+    {
+      "name": "Number of Samples",
+      "source": "Horreum label",
+      "access": "Available in metric_point dimensions",
+      "type": "integer",
+      "example": 10,
+      "description": "Number of measurements per run",
+      "importance": "high"
+    },
+    {
+      "name": "Mode",
+      "source": "dimensions.mode",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "enum": ["package", "container", "OSTree"],
+      "description": "Image type/deployment mode",
+      "importance": "critical"
+    },
+    {
+      "name": "User",
+      "source": "Horreum label",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "example": "jenkins-ci",
+      "description": "User who triggered test",
+      "importance": "medium"
+    },
+    {
+      "name": "Build",
+      "source": "Horreum label",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "example": "20250115.1",
+      "description": "Build identifier",
+      "importance": "high"
+    },
+    {
+      "name": "Target",
+      "source": "dimensions.target",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "enum": ["qemu", "intel-nuc", "raspberry-pi"],
+      "description": "Hardware platform",
+      "importance": "critical"
+    },
+    {
+      "name": "OS ID",
+      "source": "dimensions.os_id",
+      "access": "Available in metric_point dimensions",
+      "type": "string",
+      "enum": ["rhel", "autosd", "fedora"],
+      "description": "Operating system variant",
+      "importance": "critical"
+    },
+    {
+      "name": "Start Time",
+      "source": "timestamp field",
+      "access": "Available in metric_point timestamp",
+      "type": "datetime",
+      "format": "ISO 8601",
+      "description": "Test execution timestamp",
+      "importance": "high"
+    }
+  ],
+  "three_d_matrix": {
+    "description": "Standard result organization structure",
+    "dimensions": [
+      {
+        "name": "target",
+        "field": "dimensions.target",
+        "description": "Hardware platform (qemu, intel-nuc, etc.)",
+        "enables": "Cross-platform performance comparison"
+      },
+      {
+        "name": "mode",
+        "field": "dimensions.mode",
+        "description": "Image type (package, container, OSTree)",
+        "enables": "Cross-deployment-mode comparison"
+      },
+      {
+        "name": "os_id",
+        "field": "dimensions.os_id",
+        "description": "Operating system (rhel, autosd, fedora)",
+        "enables": "Cross-OS variant comparison"
+      }
+    ],
+    "usage": "Group and organize results by these three dimensions",
+    "benefits": [
+      "Identify platform-specific performance characteristics",
+      "Compare deployment modes for same hardware",
+      "Evaluate OS variants under same conditions"
+    ]
+  },
+  "data_access_patterns": {
+    "fast_path": {
+      "method": "Label values query",
+      "available_metadata": [
+        "Release (dimensions.release)",
+        "Image Name (dimensions.image_name)",
+        "Number of Samples (dimensions.samples)",
+        "Mode (dimensions.mode)",
+        "User (dimensions.user)",
+        "Build (dimensions.build)",
+        "Target (dimensions.target)",
+        "OS ID (dimensions.os_id)",
+        "Start Time (timestamp)"
+      ],
+      "note": "All metadata fields now available on fast path (Phase 5.2 enhancement)"
+    },
+    "full_path": {
+      "method": "Dataset query",
+      "available_metadata": "All fields (same as fast path for boot-time)",
+      "tradeoffs": "Slower, higher memory usage, no advantage for boot-time metadata",
+      "note": "Only needed for custom fields not in standard labels"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "_READ_ME_FIRST": {
+    "instructions": "1. Copy this file to config.json  2. Choose ONE configuration below (stdio OR http)  3. Update connection details",
+    "decision_guide": {
+      "use_stdio_if": [
+        "Elasticsearch is on localhost",
+        "Simple development setup",
+        "CI/CD automated tests",
+        "You don't have Docker networking issues"
+      ],
+      "use_http_if": [
+        "Elasticsearch is behind corporate VPN/firewall",
+        "Production deployment with multiple Domain MCPs",
+        "Elasticsearch already running in Docker (avoid Docker-in-Docker)",
+        "You need better monitoring and scalability"
+      ]
+    },
+    "common_pitfalls": {
+      "stdio_localhost": "Use 'host.docker.internal:9200' NOT 'localhost:9200'",
+      "stdio_remote": "Docker container may not reach internal DNS - use HTTP mode instead",
+      "missing_auth": "ES clusters usually require API key or username/password"
+    }
+  },
+  
+  "sources": {
+    "elasticsearch-local": {
+      "_mode": "stdio",
+      "_description": "Domain MCP launches Elasticsearch MCP as subprocess - good for local development",
+      "_works_with": "Elasticsearch 8.x, 9.x with standalone MCP server (docker.elastic.co/mcp/elasticsearch)",
+      "_network_note": "Container must reach ES URL - see troubleshooting in README if connection fails",
+      
+      "endpoint": "docker",
+      "type": "stdio",
+      "stdio_args": [
+        "run", "-i", "--rm",
+        "_TROUBLESHOOTING": "Add '--network host' after 'run' if container can't reach Elasticsearch",
+        "-e", "ES_URL",
+        "-e", "ES_API_KEY",
+        "docker.elastic.co/mcp/elasticsearch",
+        "stdio"
+      ],
+      "env": {
+        "_IMPORTANT": "These environment variables are passed to the Elasticsearch MCP container",
+        "ES_URL": "http://host.docker.internal:9200",
+        "_url_note_1": "For localhost ES: Use 'host.docker.internal:9200' (NOT 'localhost:9200')",
+        "_url_note_2": "For remote ES: Use full URL like 'https://elasticsearch.company.com:9200'",
+        "_url_note_3": "If remote doesn't work: Switch to HTTP mode (see alternative config below)",
+        
+        "ES_API_KEY": "your-elasticsearch-api-key-here",
+        "_api_key_note": "Get API key from ES: POST /_security/api_key (requires manage_api_key privilege)",
+        "_alternative_auth": "Or use ES_USERNAME and ES_PASSWORD instead (check ES MCP docs)"
+      },
+      "timeout_seconds": 30
+    }
+  },
+  
+  "_ALTERNATIVE_HTTP_CONFIG": {
+    "_comment": "USE THIS CONFIG if stdio mode has networking issues (recommended for production)",
+    "_step_1": "Start Elasticsearch MCP as separate HTTP server:",
+    "_start_command": "docker run -d --name es-mcp -e ES_URL='http://your-es:9200' -e ES_API_KEY='your-key' -p 8080:8080 docker.elastic.co/mcp/elasticsearch http",
+    "_step_2": "Copy the config below to replace the 'sources' section above",
+    "_step_3": "Restart your Domain MCP server",
+    
+    "sources": {
+      "elasticsearch-remote": {
+        "_mode": "http",
+        "_description": "Connect to separately-running Elasticsearch MCP server - best for production",
+        "endpoint": "http://localhost:8080/mcp",
+        "_endpoint_note": "Change 'localhost' to actual hostname/IP if ES MCP is on different machine",
+        "type": "http",
+        "timeout_seconds": 30,
+        "_optional_auth": "Add 'api_key' field here if ES MCP server requires authentication"
+      }
+    }
+  },
+  
+  "enabled_plugins": {
+    "_comment": "Enable/disable plugins - these must exist in src/domain/plugins/",
+    "elasticsearch-logs": true,
+    "_add_your_plugins": "Add your custom plugins here: 'my-plugin-id': true"
+  },
+  
+  "query_defaults": {
+    "_comment": "Default limits to prevent slow queries on large datasets",
+    "max_results_per_query": 1000,
+    "_max_results_note": "Reduce to 100 for testing, increase to 10000 if you have good ES performance",
+    "max_time_range_days": 30,
+    "_time_range_note": "Queries spanning >30 days will be rejected (prevent accidental full-table scans)",
+    "timeout_seconds": 30
+  }
+}
+

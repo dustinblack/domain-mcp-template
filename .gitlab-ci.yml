@@ -1,0 +1,227 @@
+stages:
+  - lint
+  - test
+  - type-check
+  - security
+  - container
+
+variables:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONUNBUFFERED: "1"
+  PIP_NO_CACHE_DIR: "1"
+  PIP_PREFER_BINARY: "1"
+  CONTAINERFILE: "Containerfile"
+  IMAGE_TAG_SHA: "${CI_COMMIT_SHORT_SHA}"
+  OCI_REVISION: "${CI_COMMIT_SHA}"
+  QUAY_EXPIRES: "90d"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  MYPY_CACHE_DIR: "$CI_PROJECT_DIR/.mypy_cache"
+
+lint:
+  stage: lint
+  image: python:3.12-slim
+  before_script:
+    - python -V
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install black isort flake8
+  script:
+    - . .venv/bin/activate
+    - black --check src/ tests/
+    - isort --check-only src/ tests/
+    - flake8 src/ tests/
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .venv/
+      - .cache/pip/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+  interruptible: true
+
+pytest:
+  stage: test
+  image: python:3.12-slim
+  before_script:
+    - python -V
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install --upgrade pip
+    - apt-get update && apt-get install -y --no-install-recommends build-essential gcc && rm -rf /var/lib/apt/lists/*
+    - pip install -r requirements.txt
+  script:
+    - . .venv/bin/activate
+    - PYTHONPATH=$CI_PROJECT_DIR pytest -q
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .venv/
+      - .cache/pip/
+      - .pytest_cache/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+  interruptible: true
+
+
+mypy:
+  stage: type-check
+  image: python:3.12-slim
+  before_script:
+    - python -V
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install mypy
+    - pip install -r requirements.txt
+  script:
+    - . .venv/bin/activate
+    - mypy --ignore-missing-imports src/
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .venv/
+      - .cache/pip/
+      - .mypy_cache/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+  interruptible: true
+
+bandit:
+  stage: security
+  image: python:3.12-slim
+  before_script:
+    - python -V
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install bandit
+  script:
+    - . .venv/bin/activate
+    - bandit -q -r src/
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .venv/
+      - .cache/pip/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+  interruptible: true
+
+pip_audit:
+  stage: security
+  image: python:3.12-slim
+  before_script:
+    - python -V
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install pip-audit
+  script:
+    - . .venv/bin/activate
+    - pip-audit -r requirements.txt || true
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .venv/
+      - .cache/pip/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+  interruptible: true
+
+
+# NOTE: Buildah cross-arch builds require binfmt/qemu on the runner.
+container_build_push:
+  stage: container
+  image: quay.io/buildah/stable:v1.36.0
+  variables:
+    BUILDAH_ISOLATION: oci
+    STORAGE_DRIVER: overlay
+  script:
+    - 'if [ -z "${IMAGE_REPO:-}" ]; then echo "IMAGE_REPO is required (e.g., quay.io/<org>/<repo>)" >&2; exit 1; fi'
+    - buildah --version
+    - buildah login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
+    # Build and push with context-specific tag
+    - |
+      echo "DEBUG: CI_COMMIT_BRANCH='${CI_COMMIT_BRANCH:-}'"
+      echo "DEBUG: CI_MERGE_REQUEST_IID='${CI_MERGE_REQUEST_IID:-}'"
+      echo "DEBUG: CI_PIPELINE_SOURCE='${CI_PIPELINE_SOURCE}'"
+      
+      # Determine tag based on pipeline type
+      if [ "${CI_PIPELINE_SOURCE}" = "merge_request_event" ]; then
+        # MR pipeline: use mr-<iid> tags
+        if [ -z "${CI_MERGE_REQUEST_IID:-}" ]; then
+          echo "ERROR: MR pipeline but CI_MERGE_REQUEST_IID is empty" >&2
+          exit 1
+        fi
+        TAG_BASE="mr-${CI_MERGE_REQUEST_IID}"
+        EXPIRES="7d"
+        echo "MR pipeline detected: using tag base '${TAG_BASE}'"
+      elif [ "${CI_COMMIT_BRANCH}" = "main" ]; then
+        # Main branch: push as commit SHA and also update :main tag
+        bash scripts/build_multiarch.sh --tag "${IMAGE_TAG_SHA}" --expires "${QUAY_EXPIRES}" --push --push-main
+        exit 0
+      else
+        # Feature branch pipeline: use sanitized branch name
+        TAG_BASE=$(echo "$CI_COMMIT_BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
+        EXPIRES="7d"
+        echo "Branch pipeline detected: using tag base '${TAG_BASE}'"
+      fi
+      
+      echo "DEBUG: TAG_BASE='${TAG_BASE}'"
+      echo "DEBUG: IMAGE_REPO='${IMAGE_REPO}'"
+      
+      if [ -z "$TAG_BASE" ]; then
+        echo "ERROR: TAG_BASE is empty, cannot proceed" >&2
+        exit 1
+      fi
+      
+      REPO_NAME="${IMAGE_REPO##*/}"
+      MANIFEST_REF="localhost/${REPO_NAME}:manifest-${TAG_BASE}"
+      echo "DEBUG: MANIFEST_REF='${MANIFEST_REF}'"
+      
+      # Build and push with primary tag
+      bash scripts/build_multiarch.sh --tag "${TAG_BASE}" --expires "${EXPIRES}" --push
+      
+      # Push the same manifest with <tag>-<sha> suffix
+      echo "Pushing additional tag: ${TAG_BASE}-${CI_COMMIT_SHORT_SHA}..."
+      if buildah manifest exists "${MANIFEST_REF}"; then
+        buildah manifest push --all "${MANIFEST_REF}" "docker://${IMAGE_REPO}:${TAG_BASE}-${CI_COMMIT_SHORT_SHA}"
+        echo "Done: ${IMAGE_REPO}:${TAG_BASE}-${CI_COMMIT_SHORT_SHA}"
+      else
+        echo "WARNING: Manifest ${MANIFEST_REF} not found, trying to re-create from pushed image..." >&2
+        buildah manifest create "${MANIFEST_REF}"
+        buildah manifest add "${MANIFEST_REF}" "docker://${IMAGE_REPO}:${TAG_BASE}"
+        buildah manifest push --all "${MANIFEST_REF}" "docker://${IMAGE_REPO}:${TAG_BASE}-${CI_COMMIT_SHORT_SHA}"
+        echo "Done: ${IMAGE_REPO}:${TAG_BASE}-${CI_COMMIT_SHORT_SHA}"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - Containerfile
+        - requirements.txt
+        - pyproject.toml
+        - src/**/*
+        - .gitlab-ci.yml
+      when: on_success
+    - if: $CI_COMMIT_BRANCH != "main"
+      changes:
+        - Containerfile
+        - requirements.txt
+        - pyproject.toml
+        - src/**/*
+        - .gitlab-ci.yml
+      when: manual
+    - when: never
+  tags:
+    - OS:fedora
+  interruptible: true
+
+
+  
+

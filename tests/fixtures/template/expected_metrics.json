@@ -1,0 +1,60 @@
+{
+  "_INSTRUCTIONS": "Define what your plugin SHOULD extract from source_response_sample.json",
+  "_FORMAT": "Array of MetricPoint objects (see src/domain/models.py for structure)",
+  
+  "_HOW_TO_CREATE": [
+    "1. Look at each document in source_response_sample.json",
+    "2. For each document, identify:",
+    "   - timestamp: When the measurement occurred",
+    "   - metric_name: Your KPI name (snake_case)",
+    "   - value: The numeric measurement",
+    "   - unit: Measurement unit (ms, s, bytes, count, etc.)",
+    "   - dimensions: Labels/tags for filtering (dict)",
+    "3. Write as MetricPoint JSON objects below"
+  ],
+  
+  "_EXAMPLE": [
+    {
+      "timestamp": "2024-12-16T10:30:00.000Z",
+      "metric_name": "page_load_time",
+      "value": 245.0,
+      "unit": "ms",
+      "dimensions": {
+        "region": "us-west",
+        "status": "success"
+      }
+    },
+    {
+      "timestamp": "2024-12-16T10:31:00.000Z",
+      "metric_name": "page_load_time",
+      "value": 312.0,
+      "unit": "ms",
+      "dimensions": {
+        "region": "eu-central",
+        "status": "success"
+      }
+    }
+  ],
+  
+  "_NOTES": {
+    "metric_name": "Must match your KPI name from glossary",
+    "unit": "Use consistent short units: ms, s, bytes, count, percent",
+    "dimensions": "Only include filterable fields, avoid high-cardinality (user_id, etc.)",
+    "timestamp": "Must be ISO 8601 format with timezone (typically UTC)",
+    "value": "Must be numeric (float or int)"
+  },
+  
+  "_TODO": [
+    "1. Review source_response_sample.json",
+    "2. Manually determine what should be extracted",
+    "3. Replace the _EXAMPLE array above with your expected outputs",
+    "4. Ensure metric_name matches your glossary KPI definitions",
+    "5. Delete all _INSTRUCTIONS, _FORMAT, etc. fields when done"
+  ],
+  
+  "expected_metrics": [
+    {
+      "_TODO": "Replace this with your actual expected MetricPoints"
+    }
+  ]
+}

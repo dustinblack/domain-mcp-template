@@ -1,0 +1,68 @@
+{
+  "_comment": "Sample Elasticsearch log documents for testing",
+  "_note": "These match the structure expected by src/domain/examples/elasticsearch_logs.py",
+  
+  "documents": [
+    {
+      "@timestamp": "2024-12-15T10:30:00.123Z",
+      "level": "INFO",
+      "service.name": "payment-api",
+      "host.name": "prod-server-01",
+      "message": "Payment processed successfully",
+      "duration": 45.2,
+      "http.request.method": "POST",
+      "http.response.status_code": 200,
+      "user_id": "user_12345",
+      "transaction_id": "txn_67890"
+    },
+    {
+      "@timestamp": "2024-12-15T10:30:05.456Z",
+      "log.level": "ERROR",
+      "service": "payment-api",
+      "host": "prod-server-01",
+      "message": "Payment gateway timeout",
+      "latency": 5000,
+      "http.request.method": "POST",
+      "http.response.status_code": 504,
+      "user_id": "user_23456",
+      "transaction_id": "txn_78901",
+      "error.type": "GatewayTimeout",
+      "error.message": "Connection to payment provider timed out"
+    },
+    {
+      "@timestamp": "2024-12-15T10:30:10.789Z",
+      "level": "WARN",
+      "service.name": "order-service",
+      "host.name": "prod-server-02",
+      "message": "Slow database query detected",
+      "took": 1200,
+      "db.query": "SELECT * FROM orders WHERE user_id = ?",
+      "db.duration_ms": 1200,
+      "user_id": "user_34567"
+    },
+    {
+      "@timestamp": "2024-12-15T10:30:15.012Z",
+      "level": "INFO",
+      "service.name": "notification-service",
+      "host.name": "prod-server-03",
+      "message": "Email sent successfully",
+      "duration": 125.5,
+      "email.recipient": "user@example.com",
+      "email.template": "order_confirmation"
+    }
+  ],
+  
+  "_field_mapping": {
+    "timestamp": "@timestamp (ISO 8601 format)",
+    "level": "level or log.level (INFO/WARN/ERROR/DEBUG)",
+    "service": "service or service.name",
+    "host": "host or host.name",
+    "duration_fields": "duration, latency, took, db.duration_ms (milliseconds)"
+  },
+  
+  "_extracted_metrics": {
+    "log.count": "Always 1 per document",
+    "log.duration_ms": "Extracted from duration/latency/took fields when present"
+  }
+}
+

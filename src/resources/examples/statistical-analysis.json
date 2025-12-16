@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Statistical Analysis",
+  "category": "queries",
+  "description": "Get comprehensive statistical analysis of boot time data",
+  "query_examples": [
+    "Show me statistics for boot time",
+    "Analyze boot time with statistical metrics",
+    "What are the p95 and p99 values for boot performance?"
+  ],
+  "tool_call": {
+    "tool": "get_key_metrics",
+    "params": {
+      "from_timestamp": "last 30 days"
+    },
+    "note": "Statistics computed automatically for multi-sample data"
+  },
+  "statistical_metrics": {
+    "always_returned": [
+      {
+        "name": "min",
+        "description": "Minimum value",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "mean",
+        "description": "Arithmetic mean (average)",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "max",
+        "description": "Maximum value",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "p95",
+        "description": "95th percentile",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "p99",
+        "description": "99th percentile",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "std_dev",
+        "description": "Standard deviation (population)",
+        "unit": "Same as source metric"
+      },
+      {
+        "name": "cv",
+        "description": "Coefficient of variance (std_dev / mean)",
+        "unit": "Dimensionless ratio"
+      }
+    ],
+    "custom_percentiles": {
+      "note": "p10, p80, etc. can be computed on request",
+      "access": "Specify in query context"
+    }
+  },
+  "calculation_details": {
+    "location": "Server-side (deterministic algorithms)",
+    "never_delegate": "LLM (non-deterministic, unreliable)",
+    "algorithms": {
+      "percentiles": "Linear interpolation between ranks",
+      "std_dev": "Population standard deviation",
+      "cv": "std_dev / mean (measures relative variability)"
+    }
+  },
+  "analysis_types": {
+    "within_run": {
+      "description": "Statistics across multiple samples in single test run",
+      "use_case": "Measure measurement variability",
+      "example": "10 boot measurements in one test execution"
+    },
+    "cross_run": {
+      "description": "Statistics across multiple test runs over time",
+      "use_case": "Measure performance trends and consistency",
+      "example": "Daily boot time averages over 30 days",
+      "method": "Aggregate metric_points by date, compute stats"
+    }
+  },
+  "result_structure": {
+    "metric_points": [
+      {
+        "metric_id": "boot.time.total.min",
+        "timestamp": "2025-10-10T12:00:00Z",
+        "value": 45000.0,
+        "unit": "milliseconds",
+        "dimensions": {
+          "os_id": "rhel",
+          "mode": "container",
+          "target": "qemu",
+          "statistic_type": "min"
+        },
+        "source": "label_values"
+      },
+      {
+        "metric_id": "boot.time.total.mean",
+        "value": 48500.5,
+        "dimensions": {
+          "statistic_type": "mean"
+        }
+      },
+      {
+        "metric_id": "boot.time.total.cv",
+        "value": 0.05,
+        "unit": "ratio",
+        "dimensions": {
+          "statistic_type": "cv"
+        }
+      }
+    ]
+  },
+  "interpretation": {
+    "cv_values": {
+      "< 0.1": "Low variability (consistent performance)",
+      "0.1 - 0.3": "Moderate variability",
+      "> 0.3": "High variability (investigate)"
+    },
+    "percentiles": {
+      "p95": "95% of measurements below this value",
+      "p99": "99% of measurements below this value (outlier threshold)"
+    }
+  },
+  "critical_notes": [
+    "Server calculates statistics (never ask LLM to compute)",
+    "All 7 metrics returned by default when statistics requested",
+    "Statistics are deterministic and reproducible",
+    "Custom percentiles available on request"
+  ],
+  "see_also": [
+    "domain://glossary/boot-time - Boot time domain reference",
+    "domain://examples/boot-time-basic - Basic query without statistics",
+    "domain://examples/filter-by-os - Combine with OS filtering"
+  ]
+}
+

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "domain": "os-identifiers",
+  "description": "Operating system identifier domain knowledge",
+  "primary_os": {
+    "rhel": {
+      "name": "Red Hat Enterprise Linux",
+      "aliases": [],
+      "description": "Enterprise Linux OS",
+      "family": "Enterprise Linux"
+    },
+    "autosd": {
+      "name": "Automotive Signal Distribution",
+      "aliases": [],
+      "description": "Automotive-focused OS variant",
+      "family": "Automotive"
+    },
+    "fedora": {
+      "name": "Fedora Linux",
+      "aliases": [],
+      "description": "Community-driven Linux distribution",
+      "family": "Fedora"
+    },
+    "centos": {
+      "name": "CentOS",
+      "aliases": [],
+      "description": "Community Enterprise OS",
+      "family": "Enterprise Linux"
+    }
+  },
+  "horreum_label": {
+    "name": "OS ID",
+    "type": "string",
+    "case_sensitivity": "case-insensitive"
+  },
+  "filtering": {
+    "parameter_name": "os_id",
+    "server_side": true,
+    "normalization": {
+      "RHEL": "rhel",
+      "AUTOSD": "autosd"
+    }
+  },
+  "critical_constraints": {
+    "not_test_ids": "OS identifiers are LABELS, not test IDs",
+    "examples": {
+      "correct": [
+        "os_id='rhel'",
+        "os_id='autosd'"
+      ],
+      "wrong": [
+        "test_id='rhel'",
+        "test_id='autosd'",
+        "dataset_types=['rhel']"
+      ]
+    }
+  },
+  "common_mistakes": [
+    {
+      "mistake": "Using test_id='rhel' instead of os_id='rhel'",
+      "consequence": "Query returns no results or wrong data",
+      "fix": "Always use os_id parameter for OS filtering"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook for RHIVOS Performance Scale MCP
+#
+# This hook runs code formatting and quality checks before allowing commits.
+# It ensures consistent code style and catches basic issues early.
+#
+# Enable in this repo:
+#   git config core.hooksPath .githooks
+
+set -euo pipefail
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if we're in a Python project with requirements
+if [[ ! -f "requirements.txt" ]]; then
+    echo "❌ Not in a Python project root (no requirements.txt found)"
+    exit 1
+fi
+
+# Check if virtual environment is activated
+if [[ -z "${VIRTUAL_ENV:-}" ]]; then
+    echo "⚠️  Warning: No virtual environment detected"
+    echo "   Consider activating venv: source venv/bin/activate"
+fi
+
+# Get list of staged Python files
+STAGED_PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.py$' || true)
+
+if [[ -z "$STAGED_PYTHON_FILES" ]]; then
+    echo "✅ No Python files staged for commit"
+    exit 0
+fi
+
+echo "📝 Checking staged Python files:"
+echo "$STAGED_PYTHON_FILES"
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check for required tools
+MISSING_TOOLS=""
+for tool in black isort flake8; do
+    if ! command_exists "$tool"; then
+        MISSING_TOOLS="$MISSING_TOOLS $tool"
+    fi
+done
+
+if [[ -n "$MISSING_TOOLS" ]]; then
+    echo "❌ Missing required tools:$MISSING_TOOLS"
+    echo "   Install with: pip install$MISSING_TOOLS"
+    exit 1
+fi
+
+# Format code with black and isort
+echo "🎨 Formatting with black and isort..."
+black --quiet $STAGED_PYTHON_FILES
+isort --profile black $STAGED_PYTHON_FILES
+
+# Re-stage formatted files
+git add $STAGED_PYTHON_FILES
+
+# Lint with flake8
+echo "🔍 Running flake8 linter..."
+if ! flake8 --max-line-length=88 $STAGED_PYTHON_FILES; then
+    echo "❌ Linting issues found"
+    echo "   Review and fix the issues above"
+    exit 1
+fi
+
+# Security scan with bandit (optional but recommended)
+echo "🔒 Running bandit security scan..."
+if command_exists bandit; then
+    if ! bandit -q -s B101 -lll $STAGED_PYTHON_FILES; then
+        echo "❌ Security issues found"
+        exit 1
+    fi
+else
+    echo "   bandit not found; skipping security scan (install via 'pip install bandit')"
+fi
+
+# Type check with mypy (optional but recommended)
+if command_exists mypy; then
+    echo "🔎 Running mypy type checks..."
+    if ! mypy --ignore-missing-imports $STAGED_PYTHON_FILES; then
+        echo "❌ Type errors found"
+        exit 1
+    fi
+else
+    echo "   mypy not found; skipping type checks (install via 'pip install mypy')"
+fi
+
+# Run tests (optional but recommended)
+if command_exists pytest; then
+    echo "🧪 Running pytest..."
+    export PYTHONPATH="$(pwd)"
+    if ! pytest -q -k "not integration"; then
+        echo "❌ Tests failed"
+        echo "   Fix failing tests before committing"
+        exit 1
+    fi
+else
+    echo "   pytest not found; skipping tests"
+fi
+
+# Check for common issues
+echo "🔍 Checking for common issues..."
+
+# Check for debugging statements
+if grep -n "import pdb\|pdb.set_trace()\|breakpoint()" $STAGED_PYTHON_FILES 2>/dev/null; then
+    echo "❌ Debugging statements found (pdb/breakpoint)"
+    echo "   Remove debugging code before committing"
+    exit 1
+fi
+
+# Check for TODO/FIXME without issue references
+if grep -n "TODO\|FIXME" $STAGED_PYTHON_FILES 2>/dev/null | grep -v "#[0-9]"; then
+    echo "⚠️  TODO/FIXME found without issue reference"
+    echo "   Consider linking to GitHub/GitLab issues: # TODO: Fix this #123"
+fi
+
+# Regenerate schemas if schema files were modified
+if echo "$STAGED_PYTHON_FILES" | grep -q "src/schemas/"; then
+    echo "📋 Schema files modified, regenerating schemas..."
+    if [[ -f "scripts/generate_schemas.py" ]]; then
+        python3 scripts/generate_schemas.py --output-dir schemas/ || python scripts/generate_schemas.py --output-dir schemas/
+        echo "   Schemas regenerated. Consider adding them to this commit."
+    fi
+fi
+
+echo "✅ All pre-commit checks passed!"
+echo "🚀 Ready to commit"
+
+exit 0

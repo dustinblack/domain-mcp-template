@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Boot Time Report Template",
+  "category": "presentation",
+  "description": "Standard template for presenting boot time analysis results",
+  "purpose": "Define what information MUST be included in boot time reports and how to organize it",
+  "applicable_queries": [
+    "Show me boot time results",
+    "Analyze boot performance",
+    "Create a boot time report",
+    "Evaluate boot time trends",
+    "Any query requesting boot time analysis or statistics"
+  ],
+  "default_content_requirements": {
+    "description": "ALWAYS include these elements in boot time reports unless user explicitly requests otherwise",
+    "required_sections": [
+      {
+        "name": "Boot Phases Breakdown",
+        "importance": "CRITICAL",
+        "description": "ALWAYS show individual boot phase durations, not just total boot time",
+        "phases": [
+          {
+            "metric_id": "boot.phase.kernel_pre_timer_ms",
+            "name": "Kernel Pre-Timer",
+            "description": "Early kernel initialization before timer",
+            "typical_range": "100-500ms"
+          },
+          {
+            "metric_id": "boot.phase.kernel_ms",
+            "name": "Kernel",
+            "description": "Kernel initialization after timer",
+            "typical_range": "500-2000ms"
+          },
+          {
+            "metric_id": "boot.phase.initrd_ms",
+            "name": "InitRD",
+            "description": "Initial RAM disk execution",
+            "typical_range": "1000-3000ms"
+          },
+          {
+            "metric_id": "boot.phase.switchroot_ms",
+            "name": "Switch Root",
+            "description": "Transition to actual root filesystem",
+            "typical_range": "100-500ms"
+          },
+          {
+            "metric_id": "boot.phase.system_init_ms",
+            "name": "System Init",
+            "description": "Systemd/userspace initialization",
+            "typical_range": "2000-5000ms"
+          }
+        ],
+        "calculation_note": "Total boot time = sum of all phases. If phases missing, they're treated as 0 and noted.",
+        "missing_phases_handling": "Check dimensions.missing_phases field and report to user"
+      },
+      {
+        "name": "Total Boot Time",
+        "importance": "CRITICAL",
+        "metric_ids": [
+          "boot.time.total.mean",
+          "boot.time.total.min",
+          "boot.time.total.max",
+          "boot.time.total.p95",
+          "boot.time.total.p99"
+        ],
+        "description": "Overall boot time statistics across multiple measurements"
+      },
+      {
+        "name": "KPI Timestamps",
+        "importance": "HIGH",
+        "description": "Critical milestones in boot process (included by default)",
+        "timestamps": [
+          {
+            "metric_id": "boot.timestamp.early_service_ms",
+            "name": "Early Service",
+            "description": "First critical service active"
+          },
+          {
+            "metric_id": "boot.timestamp.start_kmod_load_ms",
+            "name": "Kernel Module Load",
+            "description": "Kernel module loading begins"
+          },
+          {
+            "metric_id": "boot.timestamp.first_service_ms",
+            "name": "First Service",
+            "description": "First systemd service activated"
+          },
+          {
+            "metric_id": "boot.timestamp.network_online_ms",
+            "name": "Network Online",
+            "description": "Network connectivity established"
+          }
+        ],
+        "note": "These are always returned from get_key_metrics, include them in reports"
+      },
+      {
+        "name": "Report Metadata",
+        "importance": "CRITICAL",
+        "description": "Context information required for all reports",
+        "fields": [
+          {
+            "name": "RHIVOS OS ID",
+            "field": "dimensions.os_id",
+            "example": "rhel",
+            "required": true
+          },
+          {
+            "name": "RHIVOS Target",
+            "field": "dimensions.target",
+            "example": "qemu",
+            "required": true,
+            "description": "Hardware platform"
+          },
+          {
+            "name": "RHIVOS Mode",
+            "field": "dimensions.mode",
+            "example": "package",
+            "required": true,
+            "description": "Image type"
+          },
+          {
+            "name": "RHIVOS Release",
+            "field": "dimensions.release",
+            "example": "9.5",
+            "required": true
+          },
+          {
+            "name": "RHIVOS Image Name",
+            "field": "dimensions.image_name",
+            "example": "rhel-9.5-container-minimal",
+            "required": true
+          },
+          {
+            "name": "Number of Samples",
+            "field": "dimensions.samples",
+            "example": "10",
+            "required": true,
+            "description": "Number of measurements per test run"
+          },
+          {
+            "name": "User",
+            "field": "dimensions.user",
+            "example": "jenkins-ci",
+            "required": false
+          },
+          {
+            "name": "RHIVOS Build",
+            "field": "dimensions.build",
+            "example": "20250115.1",
+            "required": false
+          },
+          {
+            "name": "Start Time",
+            "field": "timestamp",
+            "example": "2025-10-15T10:00:00Z",
+            "required": true,
+            "description": "Test execution timestamp"
+          }
+        ],
+        "access": "All fields available in dimensions dict of each metric_point"
+      },
+      {
+        "name": "3D Matrix Organization",
+        "importance": "CRITICAL",
+        "description": "Results MUST be grouped by target × mode × os_id",
+        "see": "domain://examples/3d-matrix-organization for detailed algorithm"
+      }
+    ]
+  },
+  "example_complete_report": {
+    "title": "Nightly Boot Time Analysis (Last 7 Days)",
+    "summary": {
+      "date_range": "2025-10-10 to 2025-10-16",
+      "run_type": "nightly",
+      "total_runs": 7,
+      "platforms": ["qemu", "raspberry-pi"],
+      "modes": ["package", "container"],
+      "os_variants": ["rhel", "autosd"]
+    },
+    "results_by_configuration": [
+      {
+        "configuration": {
+          "os_id": "rhel",
+          "target": "qemu",
+          "mode": "package",
+          "release": "9.5",
+          "image_name": "rhel-9.5-package-base",
+          "samples": "10"
+        },
+        "total_boot_time": {
+          "mean": "7050.5ms",
+          "min": "6900.2ms",
+          "max": "7200.8ms",
+          "p95": "7150.3ms",
+          "p99": "7180.1ms",
+          "std_dev": "85.3ms",
+          "cv": "0.012"
+        },
+        "boot_phases": {
+          "kernel_pre_timer": "150.2ms",
+          "kernel": "1200.5ms",
+          "initrd": "2100.3ms",
+          "switchroot": "300.1ms",
+          "system_init": "3299.4ms"
+        },
+        "kpi_timestamps": {
+          "early_service": "2500.0ms",
+          "start_kmod_load": "1800.0ms",
+          "first_service": "3000.0ms",
+          "network_online": "6500.0ms"
+        },
+        "trending": {
+          "week_over_week": "-1.2%",
+          "assessment": "Stable performance"
+        }
+      }
+    ],
+    "cross_configuration_comparison": {
+      "fastest_platform": "qemu (7050ms) vs raspberry-pi (8200ms)",
+      "fastest_mode": "package (7050ms) vs container (7150ms)",
+      "fastest_os": "autosd (6900ms) vs rhel (7050ms)"
+    },
+    "anomalies_detected": [
+      {
+        "date": "2025-10-13",
+        "configuration": "rhel/qemu/package",
+        "boot_time": "12977.9ms",
+        "change": "+84% vs previous day",
+        "flag": "CRITICAL - Investigate"
+      }
+    ]
+  },
+  "critical_presentation_rules": [
+    "ALWAYS include boot phases breakdown (not just total time)",
+    "ALWAYS show metadata (os_id, target, mode, release, image_name, samples)",
+    "ALWAYS organize by 3D matrix (target × mode × os_id)",
+    "ALWAYS include KPI timestamps when available",
+    "ALWAYS note missing phases (check dimensions.missing_phases)",
+    "ALWAYS show statistical metrics (mean, min, max, p95, p99, std_dev, cv) when available",
+    "ALWAYS calculate and show cross-configuration comparisons",
+    "ALWAYS flag performance changes > 10%",
+    "DO NOT show only total boot time without phases",
+    "DO NOT omit metadata fields (they're all available in dimensions now)"
+  ],
+  "metric_discovery": {
+    "total_boot_time_metrics": [
+      "boot.time.total.mean",
+      "boot.time.total.min",
+      "boot.time.total.max",
+      "boot.time.total.p95",
+      "boot.time.total.p99",
+      "boot.time.total.std_dev",
+      "boot.time.total.cv"
+    ],
+    "phase_metrics": [
+      "boot.phase.kernel_pre_timer_ms.mean",
+      "boot.phase.kernel_ms.mean",
+      "boot.phase.initrd_ms.mean",
+      "boot.phase.switchroot_ms.mean",
+      "boot.phase.system_init_ms.mean"
+    ],
+    "kpi_metrics": [
+      "boot.timestamp.early_service_ms.mean",
+      "boot.timestamp.start_kmod_load_ms.mean",
+      "boot.timestamp.first_service_ms.mean",
+      "boot.timestamp.network_online_ms.mean"
+    ],
+    "filtering": "Filter metric_points array by metric_id prefix to extract each category"
+  },
+  "common_mistakes_to_avoid": [
+    "❌ Showing only total boot time without phases",
+    "❌ Omitting metadata (os_id, target, mode, release, etc.)",
+    "❌ Not grouping by 3D matrix (showing flat list of numbers)",
+    "❌ Not including KPI timestamps",
+    "❌ Not showing statistical metrics (p95, p99, cv)",
+    "❌ Not flagging anomalies or performance changes",
+    "❌ Assuming phases are missing (they're always returned, check metric_points)",
+    "✅ CORRECT: Show total + phases + metadata + 3D matrix organization + KPIs"
+  ],
+  "see_also": [
+    "domain://examples/3d-matrix-organization - Matrix grouping algorithm",
+    "domain://examples/statistical-analysis - Statistical metrics guide",
+    "domain://glossary/boot-time - Complete boot time domain reference",
+    "domain://glossary/metadata-fields - Metadata field details"
+  ]
+}
+

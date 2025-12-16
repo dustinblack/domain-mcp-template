@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Basic Boot Time Query",
+  "category": "queries",
+  "description": "Get recent boot time results with all default data",
+  "query_examples": [
+    "Show me boot time data from the last 30 days",
+    "Get boot time results from the past week",
+    "What are the recent boot time measurements?"
+  ],
+  "tool_call": {
+    "tool": "get_key_metrics",
+    "params": {
+      "from_timestamp": "last 30 days"
+    },
+    "optional_params": {
+      "to_timestamp": "now",
+      "source_id": "auto-selected first configured source"
+    }
+  },
+  "returns": {
+    "boot_phases": [
+      "kernel_pre_timer",
+      "kernel",
+      "initrd",
+      "switchroot",
+      "system_init"
+    ],
+    "total_boot_time": "Sum of all phases",
+    "kpi_timestamps": [
+      "early_service",
+      "start_kmod_load",
+      "first_service",
+      "network_online"
+    ],
+    "confidence_values": "NOT included (use merge_strategy='comprehensive' if needed)"
+  },
+  "result_structure": {
+    "metric_points": [
+      {
+        "metric_id": "boot.time.kernel",
+        "timestamp": "2025-10-10T12:00:00Z",
+        "value": 12500.5,
+        "unit": "milliseconds",
+        "dimensions": {
+          "os_id": "rhel",
+          "mode": "container",
+          "target": "qemu"
+        },
+        "source": "label_values"
+      }
+    ]
+  },
+  "critical_notes": [
+    "NEVER use test_id for boot time queries (auto-discovery works)",
+    "Empty params {} or just time range is sufficient",
+    "Label values path is preferred (fast, server-filtered)"
+  ],
+  "next_steps": [
+    "Filter by OS: See domain://examples/filter-by-os",
+    "Get statistics: See domain://examples/statistical-analysis",
+    "Filter by platform: Client-side filter on dimensions.target"
+  ]
+}
+

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "domain": "boot-time",
+  "description": "Boot time performance analysis domain knowledge",
+  "boot_phases": {
+    "kernel_pre_timer": {
+      "description": "Pre-timer kernel initialization phase",
+      "unit": "milliseconds",
+      "typical_range": [100, 5000]
+    },
+    "kernel": {
+      "description": "Kernel initialization phase",
+      "unit": "milliseconds",
+      "typical_range": [500, 15000]
+    },
+    "initrd": {
+      "description": "Initial RAM disk phase",
+      "unit": "milliseconds",
+      "typical_range": [1000, 30000]
+    },
+    "switchroot": {
+      "description": "Switch to real root filesystem",
+      "unit": "milliseconds",
+      "typical_range": [100, 5000]
+    },
+    "system_init": {
+      "description": "System initialization (systemd)",
+      "unit": "milliseconds",
+      "typical_range": [5000, 60000]
+    }
+  },
+  "kpi_timestamps": {
+    "early_service": {
+      "description": "First critical service started",
+      "unit": "milliseconds",
+      "note": "Relative to boot start"
+    },
+    "start_kmod_load": {
+      "description": "Kernel module loading began",
+      "unit": "milliseconds",
+      "note": "Relative to boot start"
+    },
+    "first_service": {
+      "description": "First user service started",
+      "unit": "milliseconds",
+      "note": "Relative to boot start"
+    },
+    "network_online": {
+      "description": "Network fully operational",
+      "unit": "milliseconds",
+      "note": "Relative to boot start"
+    }
+  },
+  "total_boot_time": {
+    "calculation": "Sum of all boot phases",
+    "missing_phase_handling": "Treat as 0 and note in missing_phases dimension",
+    "unit": "milliseconds"
+  },
+  "default_returns": {
+    "always_included": [
+      "All boot phases (kernel_pre_timer, kernel, initrd, switchroot, system_init)",
+      "Total boot time (sum of phases)",
+      "KPI timestamps (early_service, start_kmod_load, first_service, network_online)"
+    ],
+    "confidence_values": "NOT included by default (add noise, useful only for data quality queries)"
+  },
+  "data_sources": {
+    "preferred": {
+      "type": "label_values",
+      "benefits": [
+        "Pre-transformed by Horreum",
+        "Server-side filtering",
+        "Faster query performance",
+        "Lower memory usage"
+      ]
+    },
+    "fallback": {
+      "type": "datasets",
+      "when": "Label values unavailable or incomplete",
+      "tradeoffs": "Slower, requires client-side parsing"
+    }
+  },
+  "test_discovery": {
+    "auto_discovers": "boot-time-verbose test in Horreum",
+    "critical_constraint": "NEVER use test_id for boot time queries",
+    "rationale": "Auto-discovery works reliably, explicit test_id causes failures"
+  },
+  "statistical_analysis": {
+    "default_metrics": [
+      "min",
+      "mean",
+      "max",
+      "p95",
+      "p99",
+      "std_dev",
+      "cv"
+    ],
+    "calculation_location": "Server-side (deterministic)",
+    "never_delegate_to": "LLM (non-deterministic, unreliable)",
+    "types": {
+      "within_run": "Statistics across multiple samples within single test run",
+      "cross_run": "Statistics across multiple test runs over time"
+    }
+  }
+}
+

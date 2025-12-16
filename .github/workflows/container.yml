@@ -1,0 +1,214 @@
+name: Container Build
+
+on:
+  # Trigger on push when relevant files change
+  push:
+    paths:
+      - 'Containerfile'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'src/**'
+      - 'scripts/build_multiarch.sh'
+      - '.github/workflows/container.yml'
+  # Trigger on pull requests
+  pull_request:
+    paths:
+      - 'Containerfile'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'src/**'
+      - 'scripts/build_multiarch.sh'
+      - '.github/workflows/container.yml'
+  # Trigger on GitHub releases
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_REPO: ${{ vars.IMAGE_REPO }}
+  OCI_REVISION: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    name: Build and push container image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check IMAGE_REPO configured
+        run: |
+          if [ -z "${IMAGE_REPO}" ]; then
+            echo "⚠️  Repository variable IMAGE_REPO not set" >&2
+            echo "Using default: ghcr.io/${{ github.repository }}" >&2
+            echo "IMAGE_REPO=ghcr.io/${{ github.repository }}" >> $GITHUB_ENV
+          fi
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Compute tags
+        id: compute_tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            # For releases, use the release tag (e.g., v1.2.3)
+            VERSION="${{ github.event.release.tag_name }}"
+            echo "tag=${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "additional_tag=latest" >> "$GITHUB_OUTPUT"
+            echo "Building release version: ${VERSION}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For PRs, use PR number and short SHA (e.g., pr-123-a1b2c3d)
+            PR_NUM="${{ github.event.pull_request.number }}"
+            SHORT_SHA="${GITHUB_SHA:0:7}"
+            echo "tag=pr-${PR_NUM}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+            echo "additional_tag=pr-${PR_NUM}" >> "$GITHUB_OUTPUT"
+            echo "Building PR #${PR_NUM} commit: ${SHORT_SHA}"
+          else
+            # For branch pushes, use branch name and short SHA
+            BRANCH_NAME="${{ github.ref_name }}"
+            SHORT_SHA="${GITHUB_SHA:0:7}"
+            # Sanitize branch name for container tags (replace / with -)
+            SAFE_BRANCH=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+            
+            if [ "$BRANCH_NAME" = "main" ]; then
+              # Main branch: use SHA as primary tag, 'main' as additional
+              echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+              echo "additional_tag=main" >> "$GITHUB_OUTPUT"
+              echo "Building main branch commit: ${SHORT_SHA}"
+            else
+              # Development branch: use branch-SHA as primary, branch name as additional
+              echo "tag=${SAFE_BRANCH}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+              echo "additional_tag=${SAFE_BRANCH}" >> "$GITHUB_OUTPUT"
+              echo "Building branch '${BRANCH_NAME}' commit: ${SHORT_SHA}"
+            fi
+          fi
+      
+      - name: Install buildah/podman/qemu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends podman buildah qemu-user-static
+      
+      - name: Enable binfmt (best-effort)
+        run: |
+          podman run --privileged --rm tonistiigi/binfmt --install all || true
+      
+      - name: Build multi-arch container image
+        env:
+          TAG: ${{ steps.compute_tag.outputs.tag }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          # Set expiration based on build type
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "Building release - no expiration"
+            EXPIRES=""
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Building PR - 14d expiration"
+            EXPIRES="14d"
+          elif [ "$BRANCH_NAME" = "main" ]; then
+            echo "Building main branch - 90d expiration"
+            EXPIRES="90d"
+          else
+            echo "Building dev branch '$BRANCH_NAME' - 30d expiration"
+            EXPIRES="30d"
+          fi
+          
+          # Build with expiration
+          if [ -n "$EXPIRES" ]; then
+            bash scripts/build_multiarch.sh --tag "$TAG" --expires "$EXPIRES"
+          else
+            bash scripts/build_multiarch.sh --tag "$TAG"
+          fi
+      
+      - name: Determine registry type and authenticate
+        id: registry
+        run: |
+          # Detect registry type from IMAGE_REPO
+          if echo "$IMAGE_REPO" | grep -q "^ghcr.io"; then
+            echo "registry_type=github" >> "$GITHUB_OUTPUT"
+            echo "registry_host=ghcr.io" >> "$GITHUB_OUTPUT"
+            echo "Detected GitHub Container Registry"
+          elif echo "$IMAGE_REPO" | grep -q "^quay.io"; then
+            echo "registry_type=quay" >> "$GITHUB_OUTPUT"
+            echo "registry_host=quay.io" >> "$GITHUB_OUTPUT"
+            echo "Detected Quay.io registry"
+          else
+            echo "registry_type=other" >> "$GITHUB_OUTPUT"
+            REGISTRY_HOST=$(echo "$IMAGE_REPO" | cut -d/ -f1)
+            echo "registry_host=$REGISTRY_HOST" >> "$GITHUB_OUTPUT"
+            echo "Detected custom registry: $REGISTRY_HOST"
+          fi
+      
+      - name: Login to registry
+        env:
+          REGISTRY_TYPE: ${{ steps.registry.outputs.registry_type }}
+          REGISTRY_HOST: ${{ steps.registry.outputs.registry_host }}
+        run: |
+          if [ "$REGISTRY_TYPE" = "github" ]; then
+            # GitHub Container Registry
+            echo "$GITHUB_TOKEN" | podman login -u "${{ github.actor }}" --password-stdin "$REGISTRY_HOST"
+            echo "$GITHUB_TOKEN" | buildah login -u "${{ github.actor }}" --password-stdin "$REGISTRY_HOST"
+          elif [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
+            # Generic registry with credentials
+            echo "$REGISTRY_PASSWORD" | podman login -u "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_HOST"
+            echo "$REGISTRY_PASSWORD" | buildah login -u "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_HOST"
+          elif [ -n "$QUAY_USERNAME" ] && [ -n "$QUAY_PASSWORD" ]; then
+            # Quay.io with legacy credentials
+            echo "$QUAY_PASSWORD" | podman login -u "$QUAY_USERNAME" --password-stdin "$REGISTRY_HOST"
+            echo "$QUAY_PASSWORD" | buildah login -u "$QUAY_USERNAME" --password-stdin "$REGISTRY_HOST"
+          else
+            echo "⚠️  No credentials provided - skipping registry login" >&2
+            echo "Set REGISTRY_USERNAME/REGISTRY_PASSWORD or GITHUB_TOKEN in secrets" >&2
+            exit 1
+          fi
+      
+      - name: Push multi-arch image to registry
+        env:
+          TAG: ${{ steps.compute_tag.outputs.tag }}
+          ADDITIONAL_TAG: ${{ steps.compute_tag.outputs.additional_tag }}
+        run: |
+          # Push with primary tag (SHA or version)
+          echo "Pushing ${IMAGE_REPO}:${TAG}"
+          buildah manifest push --all "${IMAGE_REPO}:${TAG}" \
+            "docker://${IMAGE_REPO}:${TAG}"
+          
+          # Also push with additional tag (main, latest, or branch name)
+          if [ -n "$ADDITIONAL_TAG" ]; then
+            echo "Pushing ${IMAGE_REPO}:${ADDITIONAL_TAG}"
+            buildah manifest push --all "${IMAGE_REPO}:${TAG}" \
+              "docker://${IMAGE_REPO}:${ADDITIONAL_TAG}"
+          fi
+      
+      - name: Output image information
+        env:
+          TAG: ${{ steps.compute_tag.outputs.tag }}
+          ADDITIONAL_TAG: ${{ steps.compute_tag.outputs.additional_tag }}
+        run: |
+          echo "## 🐳 Container Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** \`${IMAGE_REPO}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Primary Tag:** \`${TAG}\`" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$ADDITIONAL_TAG" ]; then
+            echo "**Additional Tag:** \`${ADDITIONAL_TAG}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pull Commands" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Pull by specific tag" >> $GITHUB_STEP_SUMMARY
+          echo "podman pull ${IMAGE_REPO}:${TAG}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$ADDITIONAL_TAG" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "# Pull by additional tag" >> $GITHUB_STEP_SUMMARY
+            echo "podman pull ${IMAGE_REPO}:${ADDITIONAL_TAG}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
+

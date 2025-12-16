@@ -1,0 +1,62 @@
+{
+  "_INSTRUCTIONS": "Replace this entire file with REAL data from your Source MCP",
+  "_HOW_TO_GET_REAL_DATA": {
+    "elasticsearch": "Use ES search API: curl http://localhost:9200/my-index/_search?size=3",
+    "horreum": "Use adapter.datasets_search() and save the result",
+    "database": "Export a few rows as JSON from your database"
+  },
+  "_WHAT_TO_INCLUDE": [
+    "2-5 sample documents/records",
+    "Typical structure your plugin will process",
+    "Include edge cases: missing fields, null values",
+    "Redact sensitive data (PII, credentials, etc.)"
+  ],
+  
+  "_EXAMPLE_STRUCTURE_ELASTICSEARCH": {
+    "hits": {
+      "hits": [
+        {
+          "_source": {
+            "@timestamp": "2024-12-16T10:30:00.000Z",
+            "event_type": "page_load",
+            "latency_ms": 245,
+            "region": "us-west",
+            "status": "success"
+          }
+        },
+        {
+          "_source": {
+            "@timestamp": "2024-12-16T10:31:00.000Z",
+            "event_type": "page_load",
+            "latency_ms": 312,
+            "region": "eu-central",
+            "status": "success"
+          }
+        }
+      ]
+    }
+  },
+  
+  "_EXAMPLE_STRUCTURE_HORREUM": {
+    "datasets": [
+      {
+        "id": "12345",
+        "timestamp": "2024-12-16T10:30:00.000Z",
+        "data": {
+          "duration_ms": 42300,
+          "labels": {
+            "os": "rhel",
+            "arch": "x86_64"
+          }
+        }
+      }
+    ]
+  },
+  
+  "_TODO": [
+    "1. Fetch real data from your source",
+    "2. Replace this entire file with that data",
+    "3. Redact any sensitive information",
+    "4. Verify structure matches what your plugin expects"
+  ]
+}

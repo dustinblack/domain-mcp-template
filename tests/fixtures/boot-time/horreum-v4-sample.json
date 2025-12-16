@@ -1,0 +1,110 @@
+{
+  "$schema": "urn:boot-time-verbose:04",
+  "cluster_name": "rhivos-test-cluster",
+  "start_time": "2025-09-22T12:00:00Z",
+  "end_time": "2025-09-22T12:00:30Z",
+  "test_type": "boot-time",
+  "test_config": {
+    "hostname": "rhivos-test-01",
+    "IPaddr": "192.168.1.100",
+    "description": "RHIVOS nightly boot time test",
+    "reboot_timeout": "300",
+    "ssh_timeout": "60",
+    "boot_tgt": "multi-user.target",
+    "blame_cnt": "10"
+  },
+  "system_config": {
+    "kernel": "6.1.0-rhivos.el9.aarch64",
+    "osrelease": "RHEL 9.2",
+    "os_name": "Red Hat Enterprise Linux",
+    "os_id": "rhel",
+    "os_ver": "9.2",
+    "build": "20250922.1",
+    "architecture": "aarch64",
+    "model": "Raspberry Pi 4 Model B",
+    "numcores": "4",
+    "bogomips": "108.00",
+    "release": "9.2",
+    "image_name": "rhivos-9.2-aarch64",
+    "image_target": "multi-user",
+    "image_timestamp": "2025-09-22T08:00:00Z",
+    "installed_rpms": [
+      "kernel-6.1.0-rhivos.el9",
+      "systemd-252-14.el9",
+      "NetworkManager-1.42.2-1.el9"
+    ],
+    "firmware": "UEFI 2.8"
+  },
+  "test_results": [
+    {
+      "sample": 1,
+      "start_time": "2025-09-22T12:00:00Z",
+      "end_time": "2025-09-22T12:00:18Z",
+      "satime": {
+        "kernel": 4200,
+        "initrd": 2800,
+        "userspace": 11000,
+        "total": 18000
+      },
+      "initramfs": {
+        "unpack_ts": 1000,
+        "init_ts": 2000,
+        "unpack_init_int": 1000,
+        "systemd_ts": 3800,
+        "init_systemd_int": 1800
+      },
+      "earlyservice": {
+        "systemd_ts": 3800,
+        "earlyservice_ts": 6500,
+        "systemd_earlyservice_int": 2700
+      },
+      "dlkm": {
+        "systemd_ts": 3800,
+        "udev_ts": 5200,
+        "systemd_udev_int": 1400,
+        "start_kmod_load_ts": 6000,
+        "udev_start_kmod_load_int": 800,
+        "finish_kmod_load_ts": 8500,
+        "start_kmod_load_finish_kmod_load_int": 2500
+      },
+      "clktick": {
+        "primary_entry_ts": 100,
+        "time_init_ts": 500,
+        "setup_arch_ts": 1200,
+        "primary_entry_time_init_int": 400
+      },
+      "reboot": {
+        "reboot_et": 16000,
+        "ssh_et": 18000,
+        "sysctl_et": 17500,
+        "total_et": 18000,
+        "boot_tgt": "multi-user.target",
+        "reboot": "success"
+      },
+      "sablame": {},
+      "timing_details": [
+        {
+          "name": "systemd-networkd.service",
+          "activating": 8500,
+          "activated": 12000,
+          "time": 3500,
+          "kpi": true
+        },
+        {
+          "name": "NetworkManager.service", 
+          "activating": 9000,
+          "activated": 13500,
+          "time": 4500,
+          "kpi": true
+        },
+        {
+          "name": "sshd.service",
+          "activating": 14000,
+          "activated": 15500,
+          "time": 1500,
+          "kpi": false
+        }
+      ]
+    }
+  ]
+}

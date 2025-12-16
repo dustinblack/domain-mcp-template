@@ -1,0 +1,72 @@
+{
+  "performance_metrics": {
+    "throughput": {
+      "ops_per_second": 15420.5,
+      "bytes_per_second": 1542050000,
+      "requests_per_second": 7710.25
+    },
+    "latency": {
+      "mean_ms": 12.5,
+      "median_ms": 10.2,
+      "p95_ms": 25.8,
+      "p99_ms": 45.2,
+      "p99_9_ms": 78.5,
+      "max_ms": 120.3
+    },
+    "resources": {
+      "cpu": {
+        "utilization_percent": 75.2,
+        "load_avg_1m": 2.4,
+        "load_avg_5m": 2.1
+      },
+      "memory": {
+        "used_bytes": 8589934592,
+        "total_bytes": 17179869184,
+        "utilization_percent": 50.0,
+        "available_bytes": 8589934592
+      },
+      "disk": {
+        "read_ops_per_sec": 245.7,
+        "write_ops_per_sec": 89.3,
+        "read_bytes_per_sec": 25165824,
+        "write_bytes_per_sec": 9175040
+      },
+      "network": {
+        "rx_bytes_per_sec": 104857600,
+        "tx_bytes_per_sec": 52428800,
+        "rx_packets_per_sec": 12800,
+        "tx_packets_per_sec": 6400
+      }
+    },
+    "errors": {
+      "total_count": 12,
+      "rate_per_sec": 0.2
+    },
+    "test_info": {
+      "duration_sec": 60.0,
+      "success_rate_percent": 99.8
+    }
+  },
+  "test_config": {
+    "variant": "high-load",
+    "workload": "mixed-io",
+    "concurrency": 100,
+    "duration_sec": 60,
+    "ramp_up_sec": 10
+  },
+  "system_info": {
+    "os_id": "rhel-9.2",
+    "hardware": "x86_64",
+    "cpu_cores": 16,
+    "memory_gb": 16,
+    "disk_type": "nvme",
+    "network_speed": "10gbps"
+  },
+  "metadata": {
+    "collection_timestamp": "2025-09-22T10:30:00Z",
+    "collector_version": "2.1.0",
+    "schema_version": "1.0.0",
+    "test_framework": "custom-benchmark-suite"
+  },
+  "timestamp": "2025-09-22T10:30:00Z"
+}

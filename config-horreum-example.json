@@ -1,0 +1,35 @@
+{
+  "_comment": "Example configuration for Horreum Source MCP",
+  "_instructions": "Copy this to config.json and adjust for your setup",
+  
+  "sources": {
+    "horreum-http": {
+      "_comment": "HTTP mode - Horreum MCP runs as separate server",
+      "endpoint": "http://horreum-mcp:3000",
+      "type": "http",
+      "api_key": "your-horreum-mcp-token",
+      "timeout_seconds": 30
+    }
+  },
+  
+  "_alternative_stdio_config": {
+    "_comment": "If you have Horreum MCP as a CLI tool (uncommon):",
+    "sources": {
+      "horreum-stdio": {
+        "endpoint": "horreum-mcp",
+        "type": "stdio",
+        "stdio_args": ["--mode", "stdio"],
+        "env": {
+          "HORREUM_BASE_URL": "https://horreum.example.com",
+          "HORREUM_API_KEY": "your-horreum-api-key"
+        },
+        "timeout_seconds": 30
+      }
+    }
+  },
+  
+  "enabled_plugins": {
+    "boot-time-verbose": true
+  }
+}
+

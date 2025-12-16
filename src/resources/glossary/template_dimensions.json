@@ -1,0 +1,28 @@
+{
+  "_comment": "TEMPLATE: Domain-specific dimensions (filters/labels)",
+  "_instructions": "Define dimensions that users can filter and group by",
+  "_instructions_2": "Examples: region, environment, customer_tier, version",
+  
+  "dimensions": [
+    {
+      "name": "TODO_dimension_name",
+      "description": "TODO: What this dimension represents",
+      "example_values": [
+        "TODO_value_1",
+        "TODO_value_2",
+        "TODO_value_3"
+      ],
+      "example_usage": "TODO: Show metrics for [dimension]=[value]"
+    },
+    {
+      "name": "TODO_another_dimension",
+      "description": "TODO: Description",
+      "example_values": [
+        "TODO_value_a",
+        "TODO_value_b"
+      ],
+      "example_usage": "TODO: Example filter query"
+    }
+  ]
+}
+

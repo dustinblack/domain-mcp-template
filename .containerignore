@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+
+.git
+.gitignore
+
+.venv/
+venv/
+
+.env
+*.log
+
+# exclude tests to slim image size
+/tests
+
+.vscode/
+.idea/
+
+.cursor/

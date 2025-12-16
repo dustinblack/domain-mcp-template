@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "domain": "platform-identifiers",
+  "description": "Hardware platform identifier domain knowledge",
+  "platforms": {
+    "qemu": {
+      "name": "QEMU Virtual Machine",
+      "type": "virtualized",
+      "architecture": ["x86_64", "aarch64"],
+      "use_case": "Development and testing",
+      "performance_baseline": "Variable (depends on host)"
+    },
+    "intel-nuc": {
+      "name": "Intel NUC",
+      "type": "hardware",
+      "architecture": ["x86_64"],
+      "use_case": "Edge computing, compact workloads",
+      "performance_baseline": "Medium"
+    },
+    "raspberry-pi": {
+      "name": "Raspberry Pi",
+      "type": "hardware",
+      "architecture": ["aarch64"],
+      "use_case": "IoT, embedded systems",
+      "performance_baseline": "Low to medium"
+    }
+  },
+  "horreum_label": {
+    "name": "Target",
+    "type": "string",
+    "case_sensitivity": "case-insensitive"
+  },
+  "dataset_field": {
+    "path": ".target",
+    "type": "string",
+    "note": "Fallback when label unavailable"
+  },
+  "filtering": {
+    "parameter_name": "No direct filter parameter",
+    "access_via": "dimensions.target field in results",
+    "client_side": true,
+    "note": "Filter results after query by examining dimensions.target"
+  },
+  "critical_constraints": {
+    "not_test_ids": "Platform names are LABELS, not test IDs",
+    "examples": {
+      "correct": [
+        "Query all, then filter by dimensions.target == 'qemu'",
+        "Group results by dimensions.target"
+      ],
+      "wrong": [
+        "test_id='qemu'",
+        "test_id='intel-nuc'",
+        "dataset_types=['raspberry-pi']"
+      ]
+    }
+  },
+  "three_d_matrix": {
+    "dimension": "target",
+    "description": "Hardware platform dimension for result organization",
+    "enables": "Cross-platform performance comparison",
+    "combine_with": ["mode", "os_id"]
+  },
+  "common_mistakes": [
+    {
+      "mistake": "Using test_id='qemu' to filter by platform",
+      "consequence": "Query returns no results",
+      "fix": "Query all data, filter client-side by dimensions.target"
+    },
+    {
+      "mistake": "Confusing platform with test name",
+      "consequence": "Incorrect query construction",
+      "fix": "Platform is metadata dimension, not test identifier"
+    }
+  ]
+}
