@@ -176,15 +176,19 @@ jobs:
           TAG: ${{ steps.compute_tag.outputs.tag }}
           ADDITIONAL_TAG: ${{ steps.compute_tag.outputs.additional_tag }}
         run: |
+          # Extract repo name for manifest reference
+          REPO_NAME="${IMAGE_REPO##*/}"
+          LOCAL_MANIFEST="localhost/${REPO_NAME}:manifest-${TAG}"
+          
           # Push with primary tag (SHA or version)
-          echo "Pushing ${IMAGE_REPO}:${TAG}"
-          buildah manifest push --all "${IMAGE_REPO}:${TAG}" \
+          echo "Pushing manifest ${LOCAL_MANIFEST} to ${IMAGE_REPO}:${TAG}"
+          buildah manifest push --all "${LOCAL_MANIFEST}" \
             "docker://${IMAGE_REPO}:${TAG}"
           
           # Also push with additional tag (main, latest, or branch name)
           if [ -n "$ADDITIONAL_TAG" ]; then
-            echo "Pushing ${IMAGE_REPO}:${ADDITIONAL_TAG}"
-            buildah manifest push --all "${IMAGE_REPO}:${TAG}" \
+            echo "Pushing manifest ${LOCAL_MANIFEST} to ${IMAGE_REPO}:${ADDITIONAL_TAG}"
+            buildah manifest push --all "${LOCAL_MANIFEST}" \
               "docker://${IMAGE_REPO}:${ADDITIONAL_TAG}"
           fi
       
