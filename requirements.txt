@@ -32,7 +32,7 @@ scipy>=1.10.0,<2.0.0
 # asyncio-mqtt>=0.16.0,<1.0.0  # Add when real-time MQTT features are needed
 
 # Logging
-structlog>=23.1.0,<24.0.0
+structlog>=23.1.0,<26.0.0
 
 # System Monitoring
 psutil>=5.9.0,<7.0.0
