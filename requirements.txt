@@ -2,6 +2,9 @@
 pydantic>=2.0.0,<3.0.0
 pydantic[email]>=2.0.0,<3.0.0
 
+# TOML Support (for Python 3.10 compatibility)
+tomli>=2.0.0,<3.0.0; python_version < "3.11"
+
 # MCP Server Framework  
 mcp>=1.14.0,<2.0.0
 

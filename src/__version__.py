@@ -15,7 +15,10 @@ try:
 except Exception:
     # Fallback for development (package not installed)
     # Read directly from pyproject.toml
-    import tomllib
+    try:
+        import tomllib  # type: ignore[import-not-found]  # noqa: F401
+    except ImportError:
+        import tomli as tomllib  # type: ignore[no-redef]  # noqa: F401
     from pathlib import Path
 
     try:
