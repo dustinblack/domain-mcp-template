@@ -15,7 +15,7 @@ RUN pip install --upgrade pip \
 
 # Copy application code and docs
 COPY src ./src
-COPY requirements.txt pyproject.toml README.md domain_mcp_development_plan.md ./
+COPY requirements.txt pyproject.toml README.md ./
 
 # Create a non-root user and fix permissions
 USER 0
