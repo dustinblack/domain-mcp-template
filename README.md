@@ -17,6 +17,8 @@
 >
 > **Action:** Follow the steps below, then **DELETE THIS TEMPLATE SETUP GUIDE SECTION** to finalize your README.
 
+*This template was created with the assistance of AI agents including Gemini, GPT, and Sonnet.*
+
 ## 🔄 Repository Mirrors
 
 This template is available on multiple platforms:
