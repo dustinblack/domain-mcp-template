@@ -43,7 +43,10 @@ lint:
 
 pytest:
   stage: test
-  image: python:3.12-slim
+  image: python:${PYTHON_VERSION}-slim
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.10", "3.11", "3.12", "3.14"]
   before_script:
     - python -V
     - python -m venv .venv
