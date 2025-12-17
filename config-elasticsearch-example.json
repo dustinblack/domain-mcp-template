@@ -47,7 +47,7 @@
         "_url_note_3": "If remote doesn't work: Switch to HTTP mode (see alternative config below)",
         
         "ES_API_KEY": "your-elasticsearch-api-key-here",
-        "_api_key_note": "Get API key from ES: POST /_security/api_key (requires manage_api_key privilege)",
+        "_api_key_note": "Supported on ES 8.x+ (and 7.x+). Get API key: POST /_security/api_key",
         "_alternative_auth": "Or use ES_USERNAME and ES_PASSWORD instead (check ES MCP docs)"
       },
       "timeout_seconds": 30
@@ -58,6 +58,7 @@
     "_comment": "USE THIS CONFIG if stdio mode has networking issues (recommended for production)",
     "_step_1": "Start Elasticsearch MCP as separate HTTP server:",
     "_start_command": "docker run -d --name es-mcp -e ES_URL='http://your-es:9200' -e ES_API_KEY='your-key' -p 8080:8080 docker.elastic.co/mcp/elasticsearch http",
+    "_auth_clarification": "NOTE: The ES_API_KEY is passed to the docker command above, NOT in this config file (when using HTTP mode).",
     "_step_2": "Copy the config below to replace the 'sources' section above",
     "_step_3": "Restart your Domain MCP server",
     

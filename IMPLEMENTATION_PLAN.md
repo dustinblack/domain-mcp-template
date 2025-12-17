@@ -184,6 +184,9 @@ Before starting Phase 1, ensure you have:
         - `api_key` (Horreum only): The API key for authentication.
         - `stdio_args` (Elasticsearch only): A list of arguments for the Source MCP command.
         - `timeout_seconds`: Optional timeout for connection (defaults to 30).
+    *   **🔑 Auth Note:** `ES_API_KEY` is supported on Elasticsearch 8.x+ (and 7.x+). It is the preferred authentication method over username/password.
+        - **Stdio Mode:** Set `ES_API_KEY` in `config.json` (env block).
+        - **HTTP Mode:** Set `ES_API_KEY` when starting the *external* MCP server (e.g., in your `docker run` command). Do NOT put it in this `config.json`.
     *   **💡 Tip for Podman Users:** If using Podman, set the `endpoint` to your podman run command.
         - Example: `"endpoint": "podman run -i --rm -e ELASTICSEARCH_URL=... mcp-server-elasticsearch"`
         - Ensure `-i` (interactive) is used so stdin/stdout are connected.
