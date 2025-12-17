@@ -100,7 +100,7 @@ Before starting Phase 1, ensure you have:
 
 **Environment Setup:**
 - [ ] Python 3.10+ installed
-- [ ] Docker installed (if using stdio mode for Elasticsearch)
+- [ ] Container Runtime installed: Docker or Podman (if using stdio mode for Elasticsearch)
 - [ ] Dependencies installed: `pip install -r requirements.txt`
 - [ ] Git configured (for version control)
 
@@ -184,6 +184,9 @@ Before starting Phase 1, ensure you have:
         - `api_key` (Horreum only): The API key for authentication.
         - `stdio_args` (Elasticsearch only): A list of arguments for the Source MCP command.
         - `timeout_seconds`: Optional timeout for connection (defaults to 30).
+    *   **💡 Tip for Podman Users:** If using Podman, set the `endpoint` to your podman run command.
+        - Example: `"endpoint": "podman run -i --rm -e ELASTICSEARCH_URL=... mcp-server-elasticsearch"`
+        - Ensure `-i` (interactive) is used so stdin/stdout are connected.
 
 - [ ] **2.2. Verify All Source Connections**
     *   Run the verification script to ensure all configured adapters can connect to their respective Source MCPs:
