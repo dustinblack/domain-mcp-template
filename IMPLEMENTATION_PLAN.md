@@ -131,15 +131,9 @@ Before starting Phase 1, ensure you have:
     *   Domain: `[Enter Domain Here]` (e.g., "Payment Transaction Search")
     *   Target Source MCP: `[Horreum | Elasticsearch | Custom]`
 
-- [ ] **1.2. Prune Unused Adapters**
-    *   If Target is **Elasticsearch**:
-        - Remove `src/adapters/horreum.py`
-        - Remove `src/domain/examples/horreum_boot_time.py`
-        - Rename `src/adapters/elasticsearch.py` to `src/adapters/primary.py` (optional, or keep name)
-    *   If Target is **Horreum**:
-        - Remove `src/adapters/elasticsearch.py`
-        - Remove `src/domain/examples/elasticsearch_logs.py`
-    *   *Update `src/adapters/__init__.py` to export the chosen adapter.*
+- [ ] **1.2. Configure Enabled Adapters**
+    *   Instead of removing adapter files, you will enable or disable adapters by modifying the `config.json` file. Only the adapters defined in the `sources` array within `config.json` will be initialized.
+    *   Initially, you might want to keep both `src/adapters/elasticsearch.py` and `src/adapters/horreum.py` for reference. You can then configure which ones are active in `config.json`.
 
 - [ ] **1.3. Clean Up Documentation and Example References**
     *   Update `README.md` with the new Project Name.
@@ -157,21 +151,47 @@ Before starting Phase 1, ensure you have:
 
 **Goal:** Connect the Domain MCP to the Source MCP.
 
-- [ ] **2.1. Environment Variables**
-    *   Update `config.json` or `.env` with the Source MCP connection details.
-    *   For **Elasticsearch**:
-        - `ELASTICSEARCH_MCP_COMMAND`: Command to run the source MCP (e.g., `uvx mcp-server-elasticsearch`)
-        - `ELASTICSEARCH_MCP_ARGS`: Arguments (e.g., `--es-url http://localhost:9200`)
-    *   For **Horreum**:
-        - `HORREUM_MCP_URL` or Command args.
+- [ ] **2.1. Configure Source MCPs**
+    *   Update `config.json` to define your Source MCPs. The `AppConfig` model now supports multiple sources, each with its own `id`, `type`, and connection details.
+    *   **Example `config.json` structure:**
+        ```json
+        {
+          "name": "My Domain MCP",
+          "description": "...",
+          "sources": [
+            {
+              "id": "my-horreum-source",
+              "type": "horreum",
+              "endpoint": "https://horreum.example.com",
+              "api_key": "super-secret-horreum-token",
+              "timeout_seconds": 30
+            },
+            {
+              "id": "my-es-source",
+              "type": "elasticsearch",
+              "endpoint": "uvx mcp-server-elasticsearch",
+              "stdio_args": ["--es-url", "http://localhost:9200"],
+              "timeout_seconds": 60
+            }
+          ],
+          "plugins": [...]
+        }
+        ```
+    *   **Key fields per source:**
+        - `id`: A unique identifier for this source (e.g., `my-horreum-source`, `perfscale-es`).
+        - `type`: `horreum` or `elasticsearch`.
+        - `endpoint`: For Horreum, the base URL; for Elasticsearch, the command to run the Source MCP (e.g., `uvx mcp-server-elasticsearch`).
+        - `api_key` (Horreum only): The API key for authentication.
+        - `stdio_args` (Elasticsearch only): A list of arguments for the Source MCP command.
+        - `timeout_seconds`: Optional timeout for connection (defaults to 30).
 
-- [ ] **2.2. Verify Connection**
-    *   Run the verification script to ensure your adapter can connect to the Source MCP:
+- [ ] **2.2. Verify All Source Connections**
+    *   Run the verification script to ensure all configured adapters can connect to their respective Source MCPs:
         ```bash
         python scripts/verify_connection.py
         ```
-    *   Expected output: Source MCP name, version, and capabilities
-    *   If connection fails, check config.json and Source MCP availability
+    *   Expected output: Source MCP name, version, capabilities for *each* configured source.
+    *   If any connection fails, check `config.json` for that specific source and ensure the Source MCP is available.
 
 **Checkpoint:** Confirm successful connection to the Source MCP.
 
@@ -659,10 +679,12 @@ Before starting Phase 1, ensure you have:
     ```python
     async def get_key_metrics(
         ...,
+        source_id: str, # Already present, but including for context
         region_filter: Optional[str] = None,  # Add this
     ):
         # Pass to adapter
         datasets = await adapter.datasets_search(
+            source_id=source_id, # Must pass source_id to the adapter
             ...,
             region=region_filter,  # Add this
         )
